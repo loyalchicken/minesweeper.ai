@@ -1,13 +1,11 @@
 import React from 'react';
 import './styles/App.css';
-import Board from './content/components/Board'
+import UIContainer from './content/components/UIContainer'
 
 class App extends React.Component {
   render() {
     return (
-      <Board>
-        
-      </Board>
+      <UIContainer> </UIContainer>
     )
   }
 }
