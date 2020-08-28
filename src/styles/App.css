@@ -1,19 +1,20 @@
 .square {
   background: rgb(245, 242, 242);
   border: 1px solid #999;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: bold;
   line-height: 22px;
   height: 22px;
-  margin-right: -2px;
-  margin-top: -2px;
+  margin-right: 1px;
+  margin-top: 1x;
   padding: 0;
   text-align: center;
   width: 22px;
 }
 
 .row {
-  
+  display: flex;
+  align-items: center;
 }
 
 .board {

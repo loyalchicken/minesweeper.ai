@@ -12,6 +12,7 @@ export class Board extends React.Component {
     return (
       <div className="board">
         <BoardHeader numColumns = {this.props.numColumns}/>
+        <br/>
         <Grid 
           numRows = {this.props.numRows} 
           numColumns = {this.props.numColumns}

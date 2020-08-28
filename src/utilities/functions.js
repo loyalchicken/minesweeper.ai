@@ -41,7 +41,7 @@ const generateNumbersArr = (mines, rows, cols) => {
   //cells that are mines are set to -1
   return newArr.map((row, row_index) => {
     return row.map((_, col_index) => {
-      if (minesSet.has([col_index, row_index].toString())) return -1; 
+      if (minesSet.has([col_index, row_index].toString())) return 9; 
       return numNeighbors(minesSet, col_index, row_index, cols, rows);
     })
   })

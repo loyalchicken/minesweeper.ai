@@ -6,8 +6,8 @@ import {generateMines, generateNumbersArr} from "../../utilities/functions";
 
 const initialState = {
   mines: [[]],
-  numRows: 30,
-  numColumns: 16,
+  numRows: 16,
+  numColumns: 30,
   numMines: 99
 };
 
