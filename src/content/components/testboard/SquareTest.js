@@ -2,21 +2,13 @@ import React from "react";
 import {numberToColorMap} from "../../../utilities/data";
 import mineImg from '../../../images/mine.png';
 import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
-import { showSquare } from "../../actions/actions";
 
-export class Square extends React.Component {
+export class SquareTest extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
 
     };
-  }
-
-  handleClickSquare = e => {
-    if (this.props.hidden.length === 1) return;
-    this.props.showSquare(this.props.row, this.props.column);
-    this.forceUpdate();
   }
 
   display = number => {
@@ -35,8 +27,8 @@ export class Square extends React.Component {
   }
 
   show = () => {
-    if (this.props.hidden.length === 1) return false;
-    return !this.props.hidden[this.props.row][this.props.column];
+    if (this.props.mines.length === 1) return false;
+    return true;
   }
 
   render() {
@@ -51,22 +43,12 @@ export class Square extends React.Component {
       </button>
     );
   }
-}
-
-const matchDispatchToProps = dispatch =>
-  bindActionCreators(
-    {
-      showSquare
-    },
-    dispatch
-  );
+} 
 
 const mapStateToProps = state => ({
-  mines: state.mines,
-  hidden: state.hidden
+  mines: state.mines
 });
 
 export default connect(
-  mapStateToProps,
-  matchDispatchToProps
-)(Square);
+  mapStateToProps
+)(SquareTest);

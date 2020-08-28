@@ -1,7 +1,7 @@
 import React from "react";
-import Square from "./Square";
+import SquareTest from "./SquareTest";
 
-export default class Row extends React.Component {
+export default class RowTest extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -10,7 +10,7 @@ export default class Row extends React.Component {
     const elementsInRow = Array.from(Array(this.props.numColumns).keys());
     return (
       elementsInRow.map((element, index) => 
-        <Square 
+        <SquareTest 
           column={index} 
           row={this.props.row}
         /> 

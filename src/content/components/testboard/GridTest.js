@@ -1,7 +1,7 @@
 import React from "react";
-import Row from "./Row";
+import RowTest from "./RowTest";
 
-export default class Grid extends React.Component {
+export default class GridTest extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -13,7 +13,7 @@ export default class Grid extends React.Component {
       <div>
         {rows.map((row, index)=> 
           <div className="row" key={index} >
-            <Row 
+            <RowTest
               row={index} 
               numColumns={this.props.numColumns}
             /> 

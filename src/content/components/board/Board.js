@@ -1,6 +1,7 @@
 import React from "react";
 import BoardHeader from "./BoardHeader";
 import Grid from "./Grid";
+import GridTest from "../testboard/GridTest";
 import { connect } from "react-redux";
 
 export class Board extends React.Component {
@@ -16,7 +17,11 @@ export class Board extends React.Component {
         <Grid 
           numRows = {this.props.numRows} 
           numColumns = {this.props.numColumns}
-          mines = {this.props.mines}
+        />
+        <br />
+        <GridTest 
+          numRows = {this.props.numRows} 
+          numColumns = {this.props.numColumns}
         />
       </div>
     );
@@ -25,8 +30,7 @@ export class Board extends React.Component {
 
 const mapStateToProps = state => ({
   numRows: state.numRows,
-  numColumns: state.numColumns,
-  mines: state.mines
+  numColumns: state.numColumns
 });
 
 export default connect(
