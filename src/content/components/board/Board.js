@@ -1,24 +1,33 @@
 import React from "react";
 import BoardHeader from "./BoardHeader";
 import Grid from "./Grid";
+import { connect } from "react-redux";
 
-export default class Board extends React.Component {
+export class Board extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      numRows: 30,
-      numColumns: 16
-    };
   }
+
   render() {
     return (
       <div className="board">
-        <BoardHeader></BoardHeader>
+        <BoardHeader numColumns = {this.props.numColumns}/>
         <Grid 
-          numRows = {this.state.numRows} 
-          numColumns = {this.state.numColumns}
+          numRows = {this.props.numRows} 
+          numColumns = {this.props.numColumns}
+          mines = {this.props.mines}
         />
       </div>
     );
   }
 }
+
+const mapStateToProps = state => ({
+  numRows: state.numRows,
+  numColumns: state.numColumns,
+  mines: state.mines
+});
+
+export default connect(
+  mapStateToProps
+)(Board);

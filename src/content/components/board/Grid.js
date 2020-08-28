@@ -16,6 +16,7 @@ export default class Grid extends React.Component {
             <Row 
               row={index} 
               numColumns={this.props.numColumns}
+              mines = {this.props.mines}
             /> 
           </div>
         )}

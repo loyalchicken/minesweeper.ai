@@ -15,6 +15,7 @@ export default class Row extends React.Component {
           row={this.props.row}
           elementsInRow={elementsInRow} 
           index={index}
+          mines={this.props.mines}
         /> 
       )
     );

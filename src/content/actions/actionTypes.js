@@ -1,1 +1,1 @@
-export const SHOW_SINGLE_REQUEST_DATA = "SHOW_SINGLE_REQUEST_DATA";
+export const NEW_GAME = "NEW_GAME";

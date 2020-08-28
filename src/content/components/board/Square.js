@@ -19,7 +19,9 @@ export default class Square extends React.Component {
         className="square" 
         onClick={this.handleClickSquare}
       >
-        {this.props.column}
+        {this.props.mines.length > 1 && (
+          this.props.mines[this.props.row][this.props.column]
+        )}
       </button>
     );
   }
