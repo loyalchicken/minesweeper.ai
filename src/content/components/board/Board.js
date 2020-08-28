@@ -14,15 +14,17 @@ export class Board extends React.Component {
       <div className="board">
         <BoardHeader numColumns = {this.props.numColumns}/>
         <br/>
-        <Grid 
-          numRows = {this.props.numRows} 
-          numColumns = {this.props.numColumns}
-        />
-        <br />
-        <GridTest 
-          numRows = {this.props.numRows} 
-          numColumns = {this.props.numColumns}
-        />
+        <div className="inline">
+          <Grid 
+            numRows = {this.props.numRows} 
+            numColumns = {this.props.numColumns}
+          />
+          <div className="divider"></div>
+          <GridTest 
+            numRows = {this.props.numRows} 
+            numColumns = {this.props.numColumns}
+          />
+        </div>
       </div>
     );
   }

@@ -76,8 +76,38 @@ const convertFrom1Dto2D = (mines, cols) => {
   return [x,y];
 }
 
+/**
+ * Unhides the surrounding "0" cells of the current cell (row_index, cols_index)
+ * @param hidden: a 2D boolean array [index by row, then column] 
+ * @param mines: 2D integer array [index by row, then column]
+ * @param row_index: current cell row index
+ * @param cols_index: current cell column index
+ * @param rows (number of rows)
+ * @param cols (number of columns)
+ * @return set of 2D indices that need to be hidden   
+ **/
+const unhideSurroundingSquares = (hidden, mines, row_index, cols_index, rows, cols) => {
+  let setOfHiddenIndices = new Set();
+  let setOfSeenIndices = new Set();
+  unhideSurroundingSquaresHelper(hidden, mines, row_index, cols_index, rows, cols, setOfHiddenIndices, setOfSeenIndices);
+  return setOfHiddenIndices;
+}
+
+const unhideSurroundingSquaresHelper = (hidden, mines, row_index, cols_index, rows, cols, setOfHiddenIndices, setOfSeenIndices) => {
+  setOfSeenIndices.add([row_index, cols_index].toString());
+  for (var i = Math.max(0, row_index-1); i <= Math.min(rows-1, row_index+1); i++) {
+    for (var j = Math.max(0, cols_index-1); j <= Math.min(cols-1, cols_index+1); j++) {
+      setOfHiddenIndices.add([i,j].toString());
+      if (mines[i][j]===0 && !setOfSeenIndices.has([i,j].toString())) {
+        unhideSurroundingSquaresHelper(hidden, mines, i, j, rows, cols, setOfHiddenIndices, setOfSeenIndices);
+      }
+    }
+  }
+}
+
 module.exports = { 
   generateMines: generateMines, 
   generateNumbersArr: generateNumbersArr,
-  convertFrom1Dto2D: convertFrom1Dto2D
+  convertFrom1Dto2D: convertFrom1Dto2D,
+  unhideSurroundingSquares: unhideSurroundingSquares
 } 

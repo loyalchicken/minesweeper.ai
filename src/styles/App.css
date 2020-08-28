@@ -10,6 +10,7 @@
   padding: 0;
   text-align: center;
   width: 22px;
+  outline: none; 
 }
 
 .row {
@@ -24,4 +25,14 @@
   align-items: center;
   text-align: center;
   min-height: 100vh;
+}
+
+.inline {
+  display: flex;
+}
+
+.divider{
+  width:10px;
+  height:auto;
+  display:inline-block;
 }

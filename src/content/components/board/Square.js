@@ -16,7 +16,6 @@ export class Square extends React.Component {
   handleClickSquare = e => {
     if (this.props.hidden.length === 1) return;
     this.props.showSquare(this.props.row, this.props.column);
-    this.forceUpdate();
   }
 
   display = number => {

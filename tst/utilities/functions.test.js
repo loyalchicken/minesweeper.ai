@@ -54,13 +54,35 @@ test('generateNumbersArr is correct', () => {
   const cols = 5;
   const numbersArr = utilitiesFunctions.generateNumbersArr(mines, rows, cols);
   const expected = [
-    [ -1, 2, 3, -1, 2 ],
-    [ 1, 2, -1, -1, 2 ],
+    [ 9, 2, 3, 9, 2 ],
+    [ 1, 2, 9, 9, 2 ],
     [ 0, 1, 2, 2, 1 ],
     [ 0, 0, 0, 0, 0 ]
   ];
   expect(numbersArr).toEqual(expected);
 });
 
+test('unhideSurroundingSquares unhides correct squares', () => {
+  const hidden = [
+    [true, true, true],
+    [true, true, true],
+    [true, true, true],
+    [true, true, true]
+  ];
+  const mines = [
+    [0, 0, 0],
+    [0, 1, 1],
+    [2, 3, 9],
+    [9, 9, 2]
+  ];
+  const row_index = 0;
+  const cols_index = 0;
+  const rows = 4;
+  const cols = 3;
+  const setIndices = utilitiesFunctions.unhideSurroundingSquares(hidden, mines, row_index, cols_index, rows, cols);
+  const arr = ['0,0', '0,1', '0,2', '1,1', '1,2', '1,0', '2,0', '2,1'];
+  let expected = new Set(arr)
+  expect(setIndices).toEqual(expected);
+});
 
 
