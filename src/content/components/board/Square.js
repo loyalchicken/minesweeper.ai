@@ -17,7 +17,7 @@ export class Square extends React.Component {
   }
 
   handleClickSquare = e => {
-    if (this.props.visible.length === 1) return;
+    if (!this.props.activeGame) return;
     if (this.props.gameMode==="flagging") {
       if (this.props.visible[this.props.row][this.props.column] === "show") {
         this.props.showSquare(this.props.row, this.props.column);
@@ -54,10 +54,10 @@ export class Square extends React.Component {
               </div>   
             )
           }
-        case "flag":
-          return <img src={flagImg} alt="flag" width="14" height="14"/>;
-        default:
-          return null;
+      case "flag":
+        return <img src={flagImg} alt="flag" width="14" height="14"/>;        
+      default:
+        return null;
     }
   }
 
@@ -94,7 +94,8 @@ const matchDispatchToProps = dispatch =>
 const mapStateToProps = state => ({
   mines: state.mines,
   visible: state.visible,
-  gameMode: state.gameMode
+  gameMode: state.gameMode,
+  activeGame: state.activeGame
 });
 
 export default connect(

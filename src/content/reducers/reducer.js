@@ -10,6 +10,7 @@ import {generateMines, generateNumbersArr, unhideSurroundingSquaresWithZero, isF
 const initialState = {
   mines: [[]],
   visible: [[]],
+  activeGame: false,
   numRows: 30,
   numColumns: 16,
   numMines: 99,
@@ -27,19 +28,19 @@ export default function reducer(state = initialState, action) {
         ...state,
         mines: numbersArr,
         visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden")),
-        gameMode: "normal"
+        gameMode: "normal",
+        activeGame: true
       }
     case SHOW_SQUARE:
       const currVisibleState = newVisible[action.row][action.cols];
 
-      //if hit a hidden mine, restart
+      //if hit a hidden mine, display all mines and set activeGame to false
       if (state.mines[action.row][action.cols]===9 && currVisibleState !== "flag") {
-        const newMines = generateMines(state.numMines, state.numRows, state.numColumns);
-        const numbersArr = generateNumbersArr(newMines, state.numRows, state.numColumns);
+        newVisible[action.row][action.cols]="show";
         return {
           ...state,
-          mines: numbersArr,
-          visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden"))
+          activeGame: false,
+          visible: newVisible
         }  
       }
 
@@ -66,16 +67,16 @@ export default function reducer(state = initialState, action) {
           for (let item of indexSet) {
             const coords = item.split(",").map(x=>+x);
 
-            //lose game if you flag incorrect cell
+            //lose game if an incorrect cell was flagged
             if (currMines[coords[0]][coords[1]]===9) {
-              const newMines = generateMines(state.numMines, state.numRows, state.numColumns);
-              const numbersArr = generateNumbersArr(newMines, state.numRows, state.numColumns);
+              newVisible[coords[0]][coords[1]]="show";
               return {
                 ...state,
-                mines: numbersArr,
-                visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden"))
-              }
+                activeGame: false,
+                visible: newVisible
+              }  
             }
+
             newVisible[coords[0]][coords[1]]="show";
           }
         }
