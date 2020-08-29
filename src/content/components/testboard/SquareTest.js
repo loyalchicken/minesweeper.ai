@@ -54,7 +54,7 @@ export class Square extends React.Component {
 
   render() {
     const hidden = !this.initialized() || (this.initialized() && this.props.visible[this.props.row][this.props.column] !== "show");
-    const squareStyle = hidden ? "squareHide" : "squareShow";
+    const squareStyle = "squareShow";
     return (
       <button 
         className={squareStyle}
