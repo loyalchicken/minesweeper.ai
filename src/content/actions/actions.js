@@ -1,7 +1,8 @@
 import {
   NEW_GAME,
   SHOW_SQUARE,
-  FLAG_SQUARE
+  FLAG_SQUARE,
+  CHANGE_MODE
 } from "./actionTypes";
 
 export function newGame() {
@@ -23,5 +24,11 @@ export function flagSquare(row, cols) {
     type: FLAG_SQUARE,
     row: row,
     cols: cols
+  }
+}
+
+export function changeMode() {
+  return {
+    type: CHANGE_MODE,
   }
 }

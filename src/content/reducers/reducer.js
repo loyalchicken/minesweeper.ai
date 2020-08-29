@@ -1,7 +1,8 @@
 import {
   NEW_GAME,
   SHOW_SQUARE,
-  FLAG_SQUARE
+  FLAG_SQUARE,
+  CHANGE_MODE
 } from "../actions/actionTypes";
 
 import {generateMines, generateNumbersArr, unhideSurroundingSquaresWithZero, isFlaggedComplete, unhideAllSurroundingSquares} from "../../utilities/functions";
@@ -11,7 +12,8 @@ const initialState = {
   visible: [[]],
   numRows: 30,
   numColumns: 16,
-  numMines: 99
+  numMines: 99,
+  gameMode: "normal"
 };
 
 export default function reducer(state = initialState, action) {
@@ -24,13 +26,14 @@ export default function reducer(state = initialState, action) {
       return {
         ...state,
         mines: numbersArr,
-        visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden"))
+        visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden")),
+        gameMode: "normal"
       }
     case SHOW_SQUARE:
       const currVisibleState = newVisible[action.row][action.cols];
 
-      //if hit mine, restart
-      if (state.mines[action.row][action.cols]===9) {
+      //if hit a hidden mine, restart
+      if (state.mines[action.row][action.cols]===9 && currVisibleState !== "flag") {
         const newMines = generateMines(state.numMines, state.numRows, state.numColumns);
         const numbersArr = generateNumbersArr(newMines, state.numRows, state.numColumns);
         return {
@@ -39,7 +42,7 @@ export default function reducer(state = initialState, action) {
           visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden"))
         }  
       }
-      
+
       //unhide current square
       if (currVisibleState === "hidden") {
         newVisible[action.row][action.cols]="show";
@@ -89,6 +92,11 @@ export default function reducer(state = initialState, action) {
       return {
         ...state,
         visible: newVisible
+      }
+    case CHANGE_MODE:
+      return {
+        ...state,
+        gameMode: state.gameMode === "normal" ? "flagging" : "normal"
       }
     default:
       return state;

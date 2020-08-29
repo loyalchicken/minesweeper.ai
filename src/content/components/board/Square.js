@@ -2,6 +2,8 @@ import React from "react";
 import {numberToColorMap} from "../../../utilities/data";
 import mineImg from '../../../images/mine.png';
 import flagImg from '../../../images/flag.png';
+import flaggingModeFlagImg from '../../../images/final_quick_flag_mode.png';
+
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { showSquare, flagSquare } from "../../actions/actions";
@@ -16,7 +18,15 @@ export class Square extends React.Component {
 
   handleClickSquare = e => {
     if (this.props.visible.length === 1) return;
-    this.props.showSquare(this.props.row, this.props.column);
+    if (this.props.gameMode==="flagging") {
+      if (this.props.visible[this.props.row][this.props.column] === "show") {
+        this.props.showSquare(this.props.row, this.props.column);
+      } else {
+        this.props.flagSquare(this.props.row, this.props.column);
+      }
+    } else {
+      this.props.showSquare(this.props.row, this.props.column);
+    }
   }
 
   handleRightClickSquare = e => {
@@ -27,6 +37,9 @@ export class Square extends React.Component {
   display = (number, visibleState) => {
     switch (visibleState) {
       case "hidden":
+        if (this.props.gameMode==="flagging") {
+          return <img src={flaggingModeFlagImg} alt="greyFlag" width="14" height="14"/>;
+        }
         return null;
       case "show":
         switch (number) {
@@ -80,7 +93,8 @@ const matchDispatchToProps = dispatch =>
 
 const mapStateToProps = state => ({
   mines: state.mines,
-  visible: state.visible
+  visible: state.visible,
+  gameMode: state.gameMode
 });
 
 export default connect(

@@ -1,11 +1,12 @@
 import React from "react";
 import {numberToColorMap} from "../../../utilities/data";
 import mineImg from '../../../images/mine.png';
+import flagImg from '../../../images/flag.png';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { showSquare } from "../../actions/actions";
+import { showSquare, flagSquare } from "../../actions/actions";
 
-export class SquareTest extends React.Component {
+export class Square extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -20,6 +21,7 @@ export class SquareTest extends React.Component {
 
   handleRightClickSquare = e => {
     if (this.props.visible.length === 1) return;
+    this.props.flagSquare(this.props.row, this.props.column);
   }
 
   display = (number, visibleState) => {
@@ -40,26 +42,26 @@ export class SquareTest extends React.Component {
             )
           }
         case "flag":
-          return null;
+          return <img src={flagImg} alt="flag" width="14" height="14"/>;
         default:
           return null;
     }
   }
 
-  show = () => {
-    if (this.props.visible.length === 1) return false;
-    return true;
+  initialized = () => {
+    return this.props.visible.length > 1;
   }
 
   render() {
-    const squareStyle = this.show() ? "squareHide" : "squareShow"; 
+    const hidden = !this.initialized() || (this.initialized() && this.props.visible[this.props.row][this.props.column] !== "show");
+    const squareStyle = hidden ? "squareHide" : "squareShow";
     return (
       <button 
         className={squareStyle}
         onClick={this.handleClickSquare}
         onContextMenu={this.handleRightClickSquare}
       >
-        {this.show() && (
+        {this.initialized() && (
           this.display(this.props.mines[this.props.row][this.props.column], "show")
         )}
       </button>
@@ -70,7 +72,8 @@ export class SquareTest extends React.Component {
 const matchDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      showSquare
+      showSquare,
+      flagSquare
     },
     dispatch
   );
@@ -83,4 +86,4 @@ const mapStateToProps = state => ({
 export default connect(
   mapStateToProps,
   matchDispatchToProps
-)(SquareTest);
+)(Square);

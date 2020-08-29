@@ -119,6 +119,9 @@ test('unhideAllSurroundingSquares barebones is correct', () => {
   const rows = 4;
   const cols = 3;
   const setIndices = utilitiesFunctions.unhideAllSurroundingSquares(visible, mines, row_index, cols_index, rows, cols);
+  const arr = ['1,0', '1,2', '2,2', '3,2'];
+  let expected = new Set(arr)
+  expect(setIndices).toEqual(expected);
 })
 
 test('unhideAllSurroundingSquares with invoking helper function to unhide "0" patches is correct', () => {
@@ -139,5 +142,7 @@ test('unhideAllSurroundingSquares with invoking helper function to unhide "0" pa
   const rows = 4;
   const cols = 3;
   const setIndices = utilitiesFunctions.unhideAllSurroundingSquares(visible, mines, row_index, cols_index, rows, cols);
-  console.log(setIndices);
+  const arr = ['1,1', '1,2', '0,1', '0,0', '1,0', '0,2', '2,1', '2,2'];
+  let expected = new Set(arr)
+  expect(setIndices).toEqual(expected);
 })

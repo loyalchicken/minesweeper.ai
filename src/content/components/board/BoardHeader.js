@@ -1,7 +1,7 @@
 import React from "react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import { newGame } from "../../actions/actions";
+import { newGame, changeMode } from "../../actions/actions";
 
 export class BoardHeader extends React.Component {
   constructor(props) {
@@ -10,17 +10,26 @@ export class BoardHeader extends React.Component {
     };
   }
 
-  handleOnClick = e => {
+  handleNewGame = e => {
     this.props.newGame();
+  }
+
+  handleChangeMode = e => {
+    this.props.changeMode();
   }
 
   render() {
     return (
       <div>
         <button 
-          onClick={this.handleOnClick}
+          onClick={this.handleNewGame}
         >
           New Game
+        </button>
+        <button 
+          onClick={this.handleChangeMode}
+        >
+          Mode
         </button>
       </div>
     );
@@ -30,7 +39,8 @@ export class BoardHeader extends React.Component {
 const matchDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      newGame
+      newGame,
+      changeMode
     },
     dispatch
   );
