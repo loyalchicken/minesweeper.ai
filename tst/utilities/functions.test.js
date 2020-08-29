@@ -79,10 +79,65 @@ test('unhideSurroundingSquares unhides correct squares', () => {
   const cols_index = 0;
   const rows = 4;
   const cols = 3;
-  const setIndices = utilitiesFunctions.unhideSurroundingSquares(hidden, mines, row_index, cols_index, rows, cols);
+  const setIndices = utilitiesFunctions.unhideSurroundingSquaresWithZero(hidden, mines, row_index, cols_index, rows, cols);
   const arr = ['0,0', '0,1', '0,2', '1,1', '1,2', '1,0', '2,0', '2,1'];
   let expected = new Set(arr)
   expect(setIndices).toEqual(expected);
 });
 
+test('isFlaggedComplete checks number of flagged neighbors correctly', () => {
+  const visible = [
+    ["flag", "hidden", "show"],
+    ["hidden", "flag", "hidden"],
+    ["flag", "show", "hidden"],
+    ["show", "flag", "hidden"]
+  ];
+  const row_index = 2;
+  const cols_index = 1;
+  const rows = 4;
+  const cols = 3;
+  const isComplete = utilitiesFunctions.isFlaggedComplete(3, visible, row_index, cols_index, rows, cols);
+  let expected = true;
+  expect(isComplete).toEqual(expected);
+});
 
+test('unhideAllSurroundingSquares barebones is correct', () => {
+  const visible = [
+    ["flag", "hidden", "show"],
+    ["hidden", "flag", "hidden"],
+    ["flag", "show", "hidden"],
+    ["show", "flag", "hidden"]
+  ];
+  const mines = [
+    [1, 1, 1],
+    [2, 9, 1],
+    [9, 3, 2],
+    [2, 9, 1]
+  ];
+  const row_index = 2;
+  const cols_index = 1;
+  const rows = 4;
+  const cols = 3;
+  const setIndices = utilitiesFunctions.unhideAllSurroundingSquares(visible, mines, row_index, cols_index, rows, cols);
+})
+
+test('unhideAllSurroundingSquares with invoking helper function to unhide "0" patches is correct', () => {
+  const visible = [
+    ["hidden", "hidden", "hidden"],
+    ["hidden", "hidden", "hidden"],
+    ["flag", "show", "show"],
+    ["show", "flag", "show"]
+  ];
+  const mines = [
+    [0, 0, 0],
+    [1, 1, 0],
+    [9, 2, 1],
+    [2, 9, 1]
+  ];
+  const row_index = 2;
+  const cols_index = 2;
+  const rows = 4;
+  const cols = 3;
+  const setIndices = utilitiesFunctions.unhideAllSurroundingSquares(visible, mines, row_index, cols_index, rows, cols);
+  console.log(setIndices);
+})

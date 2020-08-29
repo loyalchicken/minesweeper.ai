@@ -11,7 +11,7 @@ export class Board extends React.Component {
 
   render() {
     return (
-      <div className="board">
+      <div className="board" onContextMenu={(e)=> e.preventDefault()}>
         <BoardHeader numColumns = {this.props.numColumns}/>
         <br/>
         <div className="inline">

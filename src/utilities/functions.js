@@ -86,28 +86,77 @@ const convertFrom1Dto2D = (mines, cols) => {
  * @param cols (number of columns)
  * @return set of 2D indices that need to be hidden   
  **/
-const unhideSurroundingSquares = (hidden, mines, row_index, cols_index, rows, cols) => {
+const unhideSurroundingSquaresWithZero = (hidden, mines, row_index, cols_index, rows, cols) => {
   let setOfHiddenIndices = new Set();
   let setOfSeenIndices = new Set();
-  unhideSurroundingSquaresHelper(hidden, mines, row_index, cols_index, rows, cols, setOfHiddenIndices, setOfSeenIndices);
+  unhideSurroundingSquaresWithZeroHelper(hidden, mines, row_index, cols_index, rows, cols, setOfHiddenIndices, setOfSeenIndices);
   return setOfHiddenIndices;
 }
 
-const unhideSurroundingSquaresHelper = (hidden, mines, row_index, cols_index, rows, cols, setOfHiddenIndices, setOfSeenIndices) => {
+const unhideSurroundingSquaresWithZeroHelper = (hidden, mines, row_index, cols_index, rows, cols, setOfHiddenIndices, setOfSeenIndices) => {
   setOfSeenIndices.add([row_index, cols_index].toString());
   for (var i = Math.max(0, row_index-1); i <= Math.min(rows-1, row_index+1); i++) {
     for (var j = Math.max(0, cols_index-1); j <= Math.min(cols-1, cols_index+1); j++) {
       setOfHiddenIndices.add([i,j].toString());
       if (mines[i][j]===0 && !setOfSeenIndices.has([i,j].toString())) {
-        unhideSurroundingSquaresHelper(hidden, mines, i, j, rows, cols, setOfHiddenIndices, setOfSeenIndices);
+        unhideSurroundingSquaresWithZeroHelper(hidden, mines, i, j, rows, cols, setOfHiddenIndices, setOfSeenIndices);
       }
     }
   }
 }
 
+/**
+ * Checks whether the number of adjacent cells flagged equals the number of the cell's neighboring mines
+ * @param numMines: the number of adjacent cells which are mines
+ * @param visible: 2D integer array of current status of cells [index by row, then column]
+ * @param row_index: current cell row index
+ * @param cols_index: current cell column index
+ * @param rows (number of rows)
+ * @param cols (number of columns)
+ * @return boolean   
+ **/
+const isFlaggedComplete = (numMines, visible, row_index, cols_index, rows, cols) => {
+  var numFlagged = 0;
+  for (var i = Math.max(0, row_index-1); i <= Math.min(rows-1, row_index+1); i++) {
+    for (var j = Math.max(0, cols_index-1); j <= Math.min(cols-1, cols_index+1); j++) {
+      if (visible[i][j]==="flag") {
+        numFlagged+=1;
+      }
+    }
+  }
+  return numFlagged === numMines;
+}
+
+/**
+ * Unhides all neighboring cells that aren't flagged, including all "0" patches if a neighboring cell has "0" 
+ * @param mines: 2D integer array [index by row, then column]
+ * @param visible: 2D integer array of current status of cells [index by row, then column]
+ * @param row_index: current cell row index
+ * @param cols_index: current cell column index
+ * @param rows (number of rows)
+ * @param cols (number of columns)
+ * @return set of 2D indices that need to be hidden   
+ **/
+const unhideAllSurroundingSquares = (visible, mines, row_index, cols_index, rows, cols) => {
+  let setOfHiddenIndices = new Set();
+  for (var i = Math.max(0, row_index-1); i <= Math.min(rows-1, row_index+1); i++) {
+    for (var j = Math.max(0, cols_index-1); j <= Math.min(cols-1, cols_index+1); j++) {
+      if (visible[i][j]==="hidden") setOfHiddenIndices.add([i,j].toString());
+      if (mines[i][j]===0) {
+        let patchZeroSet = unhideSurroundingSquaresWithZero(visible, mines, i, j, rows, cols);
+        patchZeroSet.forEach(setOfHiddenIndices.add, setOfHiddenIndices);
+      }
+    }
+  }
+  return setOfHiddenIndices;
+}
+
+
 module.exports = { 
   generateMines: generateMines, 
   generateNumbersArr: generateNumbersArr,
   convertFrom1Dto2D: convertFrom1Dto2D,
-  unhideSurroundingSquares: unhideSurroundingSquares
+  unhideSurroundingSquaresWithZero: unhideSurroundingSquaresWithZero,
+  isFlaggedComplete: isFlaggedComplete,
+  unhideAllSurroundingSquares: unhideAllSurroundingSquares
 } 

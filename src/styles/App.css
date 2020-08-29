@@ -1,4 +1,19 @@
-.square {
+.squareHide {
+  background: rgb(228, 225, 225);
+  border: 1px solid #999;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 22px;
+  height: 22px;
+  margin-right: 1px;
+  margin-top: 1px;
+  padding: 0;
+  text-align: center;
+  width: 22px;
+  outline: none; 
+}
+
+.squareShow {
   background: rgb(245, 242, 242);
   border: 1px solid #999;
   font-size: 15px;
@@ -6,7 +21,7 @@
   line-height: 22px;
   height: 22px;
   margin-right: 1px;
-  margin-top: 1x;
+  margin-top: 1px;
   padding: 0;
   text-align: center;
   width: 22px;
