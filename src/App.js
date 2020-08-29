@@ -5,7 +5,9 @@ import UIContainer from './content/components/UIContainer'
 class App extends React.Component {
   render() {
     return (
-      <UIContainer> </UIContainer>
+      <div className="app" >
+        <UIContainer> </UIContainer>
+      </div>
     )
   }
 }

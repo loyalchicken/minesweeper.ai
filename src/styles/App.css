@@ -1,5 +1,9 @@
+.app {
+  background: rgb(54, 54, 55);
+}
+
 .squareHide {
-  background: rgb(228, 225, 225);
+  background: rgb(121, 119, 119);
   border: 1px solid #999;
   font-size: 15px;
   font-weight: bold;
@@ -14,7 +18,7 @@
 }
 
 .squareShow {
-  background: rgb(245, 242, 242);
+  background: rgb(190, 188, 188);
   border: 1px solid #999;
   font-size: 15px;
   font-weight: bold;
