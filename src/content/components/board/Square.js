@@ -6,7 +6,7 @@ import flaggingModeFlagImg from '../../../images/final_quick_flag_mode.png';
 
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { showSquare, flagSquare } from "../../actions/actions";
+import { showSquare, flagSquare, generateGame } from "../../actions/actions";
 
 export class Square extends React.Component {
   constructor(props) {
@@ -18,6 +18,9 @@ export class Square extends React.Component {
 
   handleClickSquare = e => {
     if (!this.props.activeGame) return;
+    if (!this.props.firstClick) {
+      this.props.generateGame(this.props.row, this.props.column);
+    };
     if (this.props.gameMode==="flagging") {
       if (this.props.visible[this.props.row][this.props.column] === "show") {
         this.props.showSquare(this.props.row, this.props.column);
@@ -30,7 +33,7 @@ export class Square extends React.Component {
   }
 
   handleRightClickSquare = e => {
-    if (this.props.visible.length === 1) return;
+    if (!this.props.activeGame) return;
     this.props.flagSquare(this.props.row, this.props.column);
   }
 
@@ -86,7 +89,8 @@ const matchDispatchToProps = dispatch =>
   bindActionCreators(
     {
       showSquare,
-      flagSquare
+      flagSquare,
+      generateGame
     },
     dispatch
   );
@@ -95,7 +99,8 @@ const mapStateToProps = state => ({
   mines: state.mines,
   visible: state.visible,
   gameMode: state.gameMode,
-  activeGame: state.activeGame
+  activeGame: state.activeGame,
+  firstClick: state.firstClick
 });
 
 export default connect(

@@ -2,7 +2,8 @@ import {
   NEW_GAME,
   SHOW_SQUARE,
   FLAG_SQUARE,
-  CHANGE_MODE
+  CHANGE_MODE,
+  GENERATE_GAME
 } from "../actions/actionTypes";
 
 import {generateMines, generateNumbersArr, unhideSurroundingSquaresWithZero, isFlaggedComplete, unhideAllSurroundingSquares} from "../../utilities/functions";
@@ -11,6 +12,7 @@ const initialState = {
   mines: [[]],
   visible: [[]],
   activeGame: false,
+  firstClick: false,
   numRows: 30,
   numColumns: 16,
   numMines: 99,
@@ -29,8 +31,31 @@ export default function reducer(state = initialState, action) {
         mines: numbersArr,
         visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden")),
         gameMode: "normal",
-        activeGame: true
+        activeGame: true,
+        firstClick: false
       }
+    //on first click
+    case GENERATE_GAME:
+      let number = state.mines[action.row][action.cols];
+      let newMines2 = state.mines;
+      while (number !== 0) {
+        const newMines = generateMines(state.numMines, state.numRows, state.numColumns);
+        newMines2 = generateNumbersArr(newMines, state.numRows, state.numColumns);
+        number =  newMines2[action.row][action.cols]
+      }
+      //unhide the "0" patch
+      const indexSet2 = unhideSurroundingSquaresWithZero(newVisible, newMines2, action.row, action.cols, state.numRows, state.numColumns);
+      for (let item of indexSet2) {
+        const coords = item.split(",").map(x=>+x);
+        newVisible[coords[0]][coords[1]]="show";
+      }
+      return {
+        ...state,
+        firstClick: true,
+        visible: newVisible,
+        mines: newMines2
+      }
+  
     case SHOW_SQUARE:
       const currVisibleState = newVisible[action.row][action.cols];
 
