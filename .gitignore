@@ -7,9 +7,11 @@
 
 # testing
 /client/coverage
+/env
 
 # production
 /client/build
+
 
 # misc
 .DS_Store
