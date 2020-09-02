@@ -3,7 +3,8 @@ import {
   SHOW_SQUARE,
   FLAG_SQUARE,
   CHANGE_MODE,
-  GENERATE_GAME
+  GENERATE_GAME,
+  TESTING
 } from "../actions/actionTypes";
 
 import {generateMines, generateNumbersArr, unhideSurroundingSquaresWithZero, isFlaggedComplete, unhideAllSurroundingSquares} from "../../utilities/functions";
@@ -16,7 +17,8 @@ const initialState = {
   numRows: 30,
   numColumns: 16,
   numMines: 99,
-  gameMode: "normal"
+  gameMode: "normal",
+  hello: false
 };
 
 export default function reducer(state = initialState, action) {
@@ -123,6 +125,13 @@ export default function reducer(state = initialState, action) {
       return {
         ...state,
         gameMode: state.gameMode === "normal" ? "flagging" : "normal"
+      }
+    case TESTING:
+      console.log("in reducer testing");
+      console.log(action.h);
+      return {
+        ...state,
+        hello: action.h
       }
     default:
       return state;

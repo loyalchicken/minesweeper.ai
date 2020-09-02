@@ -3,8 +3,10 @@ import {
   SHOW_SQUARE,
   FLAG_SQUARE,
   CHANGE_MODE,
-  GENERATE_GAME
+  GENERATE_GAME,
+  TESTING
 } from "./actionTypes";
+import axios from "axios";
 
 export function newGame() {
   return {
@@ -41,3 +43,18 @@ export function generateGame(row, cols) {
     cols: cols
   }
 }
+
+export const testing = () => dispatch => {
+  console.log("hin  ");
+  axios
+    .get('/solver/')
+    .then(response => {
+      console.log(response);
+      dispatch({
+        type: TESTING,
+        h: response.data.response_text
+      })
+    })
+}
+
+

@@ -1,7 +1,7 @@
 import React from "react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import { newGame, changeMode } from "../../actions/actions";
+import { newGame, changeMode, testing } from "../../actions/actions";
 
 export class BoardHeader extends React.Component {
   constructor(props) {
@@ -18,6 +18,11 @@ export class BoardHeader extends React.Component {
     this.props.changeMode();
   }
 
+  handleTest = e => {
+    this.props.testing();
+  }
+
+
   render() {
     return (
       <div>
@@ -31,21 +36,36 @@ export class BoardHeader extends React.Component {
         >
           Mode
         </button>
+        <button 
+          onClick={this.handleTest}
+        >
+          Test
+        </button>
+        {this.props.hello && (
+          <button>
+            Works 
+          </button>
+        )}
       </div>
     );
   }
 }
 
+const mapStateToProps = state => ({
+  hello: state.hello
+});
+
 const matchDispatchToProps = dispatch =>
   bindActionCreators(
     {
       newGame,
-      changeMode
+      changeMode,
+      testing
     },
     dispatch
   );
 
 export default connect(
-  null, matchDispatchToProps
+  mapStateToProps, matchDispatchToProps
 )(BoardHeader);
   
