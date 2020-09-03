@@ -4,7 +4,7 @@ import {
   FLAG_SQUARE,
   CHANGE_MODE,
   GENERATE_GAME,
-  TESTING
+  SOLVE
 } from "./actionTypes";
 import axios from "axios";
 
@@ -44,14 +44,13 @@ export function generateGame(row, cols) {
   }
 }
 
-export const testing = () => dispatch => {
-  console.log("hin  ");
+export const solve = (num_rows, num_cols, num_mines) => dispatch => {
+  var qs = require('qs')
   axios
-    .get('/solver/')
+    .get('solver/?' + qs.stringify({'num_rows': num_rows, 'num_cols': num_cols, 'num_mines': num_mines}))
     .then(response => {
-      console.log(response);
       dispatch({
-        type: TESTING,
+        type: SOLVE,
         h: response.data.response_text
       })
     })

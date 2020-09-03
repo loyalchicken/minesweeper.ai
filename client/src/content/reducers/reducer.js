@@ -4,7 +4,7 @@ import {
   FLAG_SQUARE,
   CHANGE_MODE,
   GENERATE_GAME,
-  TESTING
+  SOLVE
 } from "../actions/actionTypes";
 
 import {generateMines, generateNumbersArr, unhideSurroundingSquaresWithZero, isFlaggedComplete, unhideAllSurroundingSquares} from "../../utilities/functions";
@@ -126,9 +126,7 @@ export default function reducer(state = initialState, action) {
         ...state,
         gameMode: state.gameMode === "normal" ? "flagging" : "normal"
       }
-    case TESTING:
-      console.log("in reducer testing");
-      console.log(action.h);
+    case SOLVE:
       return {
         ...state,
         hello: action.h

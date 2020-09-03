@@ -20,6 +20,10 @@ export class Board extends React.Component {
             numColumns = {this.props.numColumns}
           />
           <div className="divider"></div>
+          <GridTest
+            numRows = {this.props.numRows} 
+            numColumns = {this.props.numColumns}
+          />
         </div>
       </div>
     );
