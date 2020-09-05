@@ -30,7 +30,7 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
 
   cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
   while len(cells_to_flag) > 0:
-    moves.append(cells_to_flag) #flags is a set of tuples of cells to be flagged
+    moves.append(cells_to_flag) #cells_to_flag is a list of lists
     hidden = flagDefiniteMines(hidden, cells_to_flag) 
     for cell in cells_to_flag:
       clickedCells, hidden = clickAdjacentCellsToUncover(cell, hidden, board, num_rows, num_cols) #need board to know which cells to unhide
@@ -55,7 +55,7 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines):
 
   Returns
   -------
-  A tuple
+  A list of 2 elements (row index, col index)
   """
   #choose a random cell on the board (0 -> size of board-1)
   if firstMove(hidden, num_rows, num_cols):
@@ -89,12 +89,12 @@ def findRandomZeroCell(board, num_rows, num_cols):
 
   Returns
   -------
-  A tuple
+  A list of 2 elements (row index, column index)
   """
   row_index, cols_index = convertFrom1Dto2D(np.random.randint(num_rows*num_cols), num_cols)
   while board[row_index][cols_index] != 0:
       row_index, cols_index = convertFrom1Dto2D(np.random.randint(num_rows*num_cols), num_cols)
-  return (row_index, cols_index)
+  return [row_index, cols_index]
 
 
 def uncover(cell, hidden, board, num_rows, num_cols):
@@ -125,13 +125,13 @@ def findDefiniteMines(hidden, num_rows, num_cols):
   
   Parameters
   ----------
-  hidden               a 2D character array of visible state of cells [index by row, then column] 
-  num_rows             number of rows
-  num_cols             number of columns
+  hidden     a 2D character array of visible state of cells [index by row, then column] 
+  num_rows   number of rows
+  num_cols   number of columns
 
   Returns
   -------
-  A set of tuples
+  A set of tuples --> a list of lists (of 2 elements (row index, col index))
   """
   #for each cell on border, check the number of adjacent hidden cells
   cells = set()
@@ -141,7 +141,7 @@ def findDefiniteMines(hidden, num_rows, num_cols):
         complete, hiddenCells = isHiddenComplete(hidden[i][j], hidden, i, j, num_rows, num_cols)
         if complete: 
           cells = cells | hiddenCells
-  return cells
+  return list(map(list, list(cells)))
 
 
 def isHiddenComplete(num_adjacent_mines, hidden, row_index, cols_index, num_rows, num_cols):
@@ -167,7 +167,7 @@ def isHiddenComplete(num_adjacent_mines, hidden, row_index, cols_index, num_rows
     for j in np.arange(max(0, cols_index-1), min(num_cols-1, cols_index+1)+1):
       if hidden[i][j]=="H":
         num_hidden += 1
-        hiddenSet.add((i,j))
+        hiddenSet.add((int(i),int(j)))
   return num_hidden == num_adjacent_mines, hiddenSet
 
 
@@ -213,8 +213,8 @@ def clickAdjacentCellsToUncover(cell, hidden, board, num_rows, num_cols):
   for i in np.arange(max(0, row_index-1), min(num_rows-1, row_index+1)+1):
     for j in np.arange(max(0, cols_index-1), min(num_cols-1, cols_index+1)+1):
       if hidden[i][j] in [1,2,3,4,5,6,7,8] and isFlaggedComplete(hidden[i][j], hidden, i, j, num_rows, num_cols):
-        cells_clicked.append((i,j))
+        cells_clicked.append((int(i),int(j)))
         cells_to_unhide = unhideAllSurroundingSquares(hidden, board, i, j, num_rows, num_cols)
         for c in cells_to_unhide:
           hidden[c[0]][c[1]]=board[c[0]][c[1]]
-  return cells_clicked, hidden
+  return list(map(list, cells_clicked)), hidden
