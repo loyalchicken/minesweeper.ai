@@ -1,10 +1,69 @@
 from solver.logic import generateMines, convertFrom1Dto2D, generateNumbersArr, generateMoves, generateBoard
 from solver.logic import unhideSurroundingSquaresWithZero, unhideSurroundingSquaresWithZeroHelper, isFlaggedComplete, unhideAllSurroundingSquares
+from solver.logic import firstMove, findRandomZeroCell, uncover
+
 import numpy as np
 
 def test_generateMoves():
-  board, hidden = generateBoard(30, 16, 99)
-  assert generateMoves(board, hidden) == 0
+  num_rows=30
+  num_cols=16
+  num_mines=99
+  board, hidden = generateBoard(num_rows, num_cols, num_mines)
+  assert generateMoves(board, hidden, num_rows, num_cols, num_mines) == 0
+
+######################################## SOLVER LOGIC #########################################################
+
+def test_uncover():
+  board = [
+    [0, 0, 0],
+    [0, 1, 1],
+    [2, 3, 9],
+    [9, 9, 2]
+  ]
+  hidden = [
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    ["H", "H", "H"]
+  ]
+  cell=(0,0)
+  num_rows=4
+  num_cols=3
+  updatedHidden = [
+    ["S", "S", "S"],
+    ["S", "S", "S"],
+    ["S", "S", "H"],
+    ["H", "H", "H"]
+  ]
+  assert uncover(cell, hidden, board, num_rows, num_cols) == updatedHidden
+
+def test_firstMove():
+  hidden = [
+    ["H", "H", "H"],
+    ["H", "H", "H"]
+  ]
+  hidden2 = [
+    ["S", "H", "H"],
+    ["H", "H", "H"]
+  ]
+  num_rows = 2
+  num_cols = 3
+  assert firstMove(hidden, num_rows, num_cols) == True
+  assert firstMove(hidden2, num_rows, num_cols) == False
+
+def test_findRandomZeroCell():
+  board = [
+    [1, 2, 1],
+    [1, 4, 0]
+  ]
+  board2 = [
+    [0, 2, 1],
+    [1, 4, 2]
+  ]
+  num_rows=2
+  num_cols=3
+  assert findRandomZeroCell(board, num_rows, num_cols) == (1,2)
+  assert findRandomZeroCell(board2, num_rows, num_cols) == (0,0)
 
 #######################################################################################################################
 def test_generateMines():
@@ -18,9 +77,9 @@ def test_convert1Dto2D():
 
 def test_generateNumbersArr():
   mines = [0,3, 7,8]
-  rows = 4
-  cols = 5
-  numbersArr = generateNumbersArr(mines, rows, cols)
+  num_rows = 4
+  num_cols = 5
+  numbersArr = generateNumbersArr(mines, num_rows, num_cols)
   expected = [
     [ 9, 2, 3, 9, 2 ],
     [ 1, 2, 9, 9, 2 ],
@@ -32,13 +91,7 @@ def test_generateNumbersArr():
 
 
 def test_unhideSurroundingSquaresWithZero():
-  hidden = [
-    [True, True, True],
-    [True, True, True],
-    [True, True, True],
-    [True, True, True]
-  ]
-  mines = [
+  board = [
     [0, 0, 0],
     [0, 1, 1],
     [2, 3, 9],
@@ -46,35 +99,35 @@ def test_unhideSurroundingSquaresWithZero():
   ]
   row_index = 0
   cols_index = 0
-  rows = 4
-  cols = 3
-  setIndices = unhideSurroundingSquaresWithZero(hidden, mines, row_index, cols_index, rows, cols)
+  num_rows = 4
+  num_cols = 3
+  setIndices = unhideSurroundingSquaresWithZero(board, row_index, cols_index, num_rows, num_cols)
   expected = {(0,0), (0,1), (0,2), (1,1), (1,2), (1,0), (2,0), (2,1)}
   assert setIndices == expected
 
 
 def test_isFlaggedComplete():
-  visible = [
-    ["flag", "hidden", "show"],
-    ["hidden", "flag", "hidden"],
-    ["flag", "show", "hidden"],
-    ["show", "flag", "hidden"]
+  hidden = [
+    ["F", "H", "S"],
+    ["H", "F", "H"],
+    ["F", "S", "H"],
+    ["S", "F", "H"]
   ]
   row_index = 2
   cols_index = 1
-  rows = 4
-  cols = 3
-  isComplete = isFlaggedComplete(3, visible, row_index, cols_index, rows, cols)
+  num_rows = 4
+  num_cols = 3
+  isComplete = isFlaggedComplete(3, hidden, row_index, cols_index, num_rows, num_cols)
   assert isComplete == True
 
 def test_unhideAllSurroundingSquares_barebones():
-  visible = [
-    ["flag", "hidden", "show"],
-    ["hidden", "flag", "hidden"],
-    ["flag", "show", "hidden"],
-    ["show", "flag", "hidden"]
+  hidden = [
+    ["F", "H", "S"],
+    ["H", "F", "H"],
+    ["F", "S", "H"],
+    ["S", "F", "H"]
   ]
-  mines = [
+  board = [
     [1, 1, 1],
     [2, 9, 1],
     [9, 3, 2],
@@ -82,21 +135,21 @@ def test_unhideAllSurroundingSquares_barebones():
   ]
   row_index = 2
   cols_index = 1
-  rows = 4
-  cols = 3
-  setIndices = unhideAllSurroundingSquares(visible, mines, row_index, cols_index, rows, cols)
+  num_rows = 4
+  num_cols = 3
+  setIndices = unhideAllSurroundingSquares(hidden, board, row_index, cols_index, num_rows, num_cols)
   expected = {(1,0), (1,2), (2,2), (3,2)}
   assert setIndices == expected
 
 
 def test_unhideAllSurroundingSquares_full():
-  visible = [
-    ["hidden", "hidden", "hidden"],
-    ["hidden", "hidden", "hidden"],
-    ["flag", "show", "show"],
-    ["show", "flag", "show"]
+  hidden = [
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    ["F", "S", "S"],
+    ["S", "F", "S"]
   ]
-  mines = [
+  board = [
     [0, 0, 0],
     [1, 1, 0],
     [9, 2, 1],
@@ -104,8 +157,8 @@ def test_unhideAllSurroundingSquares_full():
   ]
   row_index = 2
   cols_index = 2 
-  rows = 4
-  cols = 3 
-  setIndices = unhideAllSurroundingSquares(visible, mines, row_index, cols_index, rows, cols)
+  num_rows = 4
+  num_cols = 3 
+  setIndices = unhideAllSurroundingSquares(hidden, board, row_index, cols_index, num_rows, num_cols)
   expected = {(1,1), (1,2), (0,1), (0,0), (1,0), (0,2), (2,1), (2,2)}
   assert setIndices == expected

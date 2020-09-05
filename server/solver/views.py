@@ -12,5 +12,5 @@ def hello(request):
   num_cols = int(request.GET.get("num_cols"))
   num_mines = int(request.GET.get("num_mines"))
   board, hidden = generateBoard(num_rows, num_cols, num_mines)
-  moves = generateMoves(board, hidden)
+  moves = generateMoves(board, hidden, num_rows, num_cols, num_mines)
   return JsonResponse({'response_text':board.tolist()})
