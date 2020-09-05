@@ -31,6 +31,7 @@ def test_isFlaggedComplete():
   cols_index = 1
   num_rows = 4
   num_cols = 3
+
   assert isFlaggedComplete(num_adjacent_mines, hidden, row_index, cols_index, num_rows, num_cols) == True
 
 def test_unhideAllSurroundingSquares_barebones():

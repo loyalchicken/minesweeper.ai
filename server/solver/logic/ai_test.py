@@ -1,4 +1,4 @@
-from solver.logic.ai import firstMove, findRandomZeroCell, uncover, findDefiniteMines, isHiddenComplete
+from solver.logic.ai import firstMove, findRandomZeroCell, uncover, findDefiniteMines, isHiddenComplete, flagDefiniteMines, clickAdjacentCellsToUncover
 from solver.logic.ai import generateBoard, generateMoves 
 
 import numpy as np
@@ -94,3 +94,58 @@ def test_isHiddenComplete():
   complete, hiddenSet = isHiddenComplete(num_adjacent_mines, hidden, row_index, cols_index, num_rows, num_cols)
   assert complete == True
   assert hiddenSet == {(1,2), (2,2), (3,2)}
+
+
+def test_flagDefiniteMines():
+  board = [
+    [0, 0, 0],
+    [0, 1, 1],
+    [2, 3, 9],
+    [9, 9, 2]
+  ]
+  hidden = [
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    ["H", "H", "H"]
+  ]
+  mines={(0,0), (2,1)}
+  updatedHidden = [
+    ["F", "H", "H"],
+    ["H", "H", "H"],
+    ["H", "F", "H"],
+    ["H", "H", "H"]
+  ]
+  assert flagDefiniteMines(hidden, mines) == updatedHidden
+
+
+def test_clickAdjacentCellsToUncover():
+  cell = (2,1)
+  board = [
+    [0, 0, 0],
+    [1, 1, 1],
+    [2, 9, 1],
+    [9, 2, 1]
+  ]
+  hidden = [
+    ["H", "H", "H"],
+    ["H",   1,   1],
+    [2,   "F", "H"],
+    ["H", "H", "H"]
+  ]
+  num_rows=4
+  num_cols=3
+
+  expected_updated_hidden = [
+    [0,     0,   0],
+    [1,     1,   1],
+    [2,   "F",   1],
+    ["H",   2,   1]
+  ]
+
+  expected_clicked = {(1,1), (1,2), (2,2), (3,2)}
+  cells_clicked, updated_hidden = clickAdjacentCellsToUncover(cell, hidden, board, num_rows, num_cols)
+  assert set(cells_clicked) == expected_clicked
+  assert expected_updated_hidden == updated_hidden
+
+  
