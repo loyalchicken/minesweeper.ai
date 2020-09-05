@@ -1,7 +1,7 @@
 import React from "react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import { newGame, changeMode, solve } from "../../actions/actions";
+import { newGame, changeMode, solve, displayMoves } from "../../actions/actions";
 
 export class BoardHeader extends React.Component {
   constructor(props) {
@@ -18,10 +18,13 @@ export class BoardHeader extends React.Component {
     this.props.changeMode();
   }
 
-  handleSolve = e => {
+  handleGenerate = e => {
     this.props.solve(this.props.numRows, this.props.numColumns, this.props.numMines);
   }
 
+  handleSolve = e => {
+    this.props.displayMoves(this.props.moves)
+  }
 
   render() {
     return (
@@ -37,13 +40,15 @@ export class BoardHeader extends React.Component {
           Mode
         </button>
         <button 
-          onClick={this.handleSolve}
+          onClick={this.handleGenerate}
         >
-          Solve
+          Generate
         </button>
-        {this.props.hello && (
-          <button>
-            Works 
+        {this.props.moves && (
+          <button
+            onClick={this.handleSolve}
+          >
+            Solve 
           </button>
         )}
       </div>
@@ -52,7 +57,7 @@ export class BoardHeader extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  hello: state.hello,
+  moves: state.moves,
   mines: state.mines,
   numRows: state.numRows,
   numColumns: state.numColumns,
@@ -64,7 +69,8 @@ const matchDispatchToProps = dispatch =>
     {
       newGame,
       changeMode,
-      solve
+      solve,
+      displayMoves
     },
     dispatch
   );

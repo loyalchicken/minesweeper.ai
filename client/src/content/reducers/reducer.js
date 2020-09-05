@@ -4,7 +4,7 @@ import {
   FLAG_SQUARE,
   CHANGE_MODE,
   GENERATE_GAME,
-  SOLVE
+  SOLVE,
 } from "../actions/actionTypes";
 
 import {generateMines, generateNumbersArr, unhideSurroundingSquaresWithZero, isFlaggedComplete, unhideAllSurroundingSquares} from "../../utilities/functions";
@@ -18,7 +18,7 @@ const initialState = {
   numColumns: 16,
   numMines: 99,
   gameMode: "normal",
-  hello: false
+  moves: null
 };
 
 export default function reducer(state = initialState, action) {
@@ -34,7 +34,8 @@ export default function reducer(state = initialState, action) {
         visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden")),
         gameMode: "normal",
         activeGame: true,
-        firstClick: false
+        firstClick: false,
+        moves: null
       }
     //on first click
     case GENERATE_GAME:
@@ -129,7 +130,12 @@ export default function reducer(state = initialState, action) {
     case SOLVE:
       return {
         ...state,
-        hello: action.h
+        moves: action.moves,
+        mines: action.board,
+        visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden")),
+        gameMode: "normal",
+        activeGame: true,
+        firstClick: false
       }
     default:
       return state;

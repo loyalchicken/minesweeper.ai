@@ -4,7 +4,7 @@ import {
   FLAG_SQUARE,
   CHANGE_MODE,
   GENERATE_GAME,
-  SOLVE
+  SOLVE,
 } from "./actionTypes";
 import axios from "axios";
 
@@ -51,9 +51,33 @@ export const solve = (num_rows, num_cols, num_mines) => dispatch => {
     .then(response => {
       dispatch({
         type: SOLVE,
-        h: response.data.response_text
+        board: response.data.board,
+        moves: response.data.moves
       })
     })
 }
 
-
+export const displayMoves = moves => dispatch => {
+  moves.forEach(item => {
+    console.log(typeof item[0]);
+    console.log(item)
+    if (typeof item[0] === "number") {
+      //left click
+      dispatch({
+        type: SHOW_SQUARE,
+        row: item[0],
+        cols: item[1]
+      })
+    } else {
+      //right click
+      item.forEach(cell => {
+        console.log(cell)
+        dispatch({
+          type: FLAG_SQUARE,
+          row: cell[0],
+          cols: cell[1]
+        })
+      });
+    }
+  })
+}
