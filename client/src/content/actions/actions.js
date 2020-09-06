@@ -71,7 +71,6 @@ export const displayMoves = moves => dispatch => {
     } else {
       //right click
       item.forEach(cell => {
-        console.log(cell)
         dispatch({
           type: FLAG_SQUARE,
           row: cell[0],

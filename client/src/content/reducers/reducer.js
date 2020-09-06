@@ -117,7 +117,7 @@ export default function reducer(state = initialState, action) {
       const currVisibleState2 = newVisible[action.row][action.cols];
       if (currVisibleState2 === "show") newVisible[action.row][action.cols]="show";
       if (currVisibleState2 === "hidden") newVisible[action.row][action.cols]="flag";
-      if (currVisibleState2 === "flag") newVisible[action.row][action.cols]="hidden";
+      if (currVisibleState2 === "flag") newVisible[action.row][action.cols]="flag";
       return {
         ...state,
         visible: newVisible
@@ -135,7 +135,7 @@ export default function reducer(state = initialState, action) {
         visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden")),
         gameMode: "normal",
         activeGame: true,
-        firstClick: false
+        firstClick: true
       }
     default:
       return state;

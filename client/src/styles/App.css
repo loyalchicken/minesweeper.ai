@@ -1,5 +1,5 @@
 .app {
-  background: rgb(54, 54, 55);
+  background: rgb(139, 139, 175);
 }
 
 .squareHide {
@@ -50,8 +50,13 @@
   display: flex;
 }
 
-.divider{
+.divider {
   width:10px;
   height:auto;
   display:inline-block;
+}
+
+.white {
+  color: white;
+  text-align: right
 }
