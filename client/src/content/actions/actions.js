@@ -74,7 +74,7 @@ export const displayMoves = moves => dispatch => {
           row: item[0],
           cols: item[1]
         })
-      }, 0)
+      }, 1000)
     } else {
       //right click
       item.forEach(cell => {
@@ -84,7 +84,7 @@ export const displayMoves = moves => dispatch => {
             row: cell[0],
             cols: cell[1]
           })
-        }, 0)  
+        }, 1000)  
       });
     }
     dispatch({

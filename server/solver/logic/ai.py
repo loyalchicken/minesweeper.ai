@@ -10,21 +10,10 @@ def generateBoard(num_rows, num_cols, num_mines):
   hidden = [["H" for i in range(num_cols)] for j in range(num_rows)]
   return board, hidden
 
-# generateMoves:
-# while not win / don't have to guess:
-#1. findNextMove(current board) --> return a cell
-#2. uncover(cell)
-  #a. if a zero is clicked on, then unhideSurroundingSquaresWithZero
-#3. while there are definite mines (iterate through borders to get set of definite mines):
-      #for all shown cells that are definite mines: 
-        #a. flagCell()
-        #b. for all shown cells around flag, if isComplete("F"), click cell to unhideAllSurroundingSquares
-
 def generateMoves(board, hidden, num_rows, num_cols, num_mines):
   
   moves = []
   cell = findNextMove(board, hidden, num_rows, num_cols, num_mines) #need board to ensure first move hits a 0
-  #cell = [28,0]
   moves.append(cell)
   hidden = uncover(cell, hidden, board, num_rows, num_cols) #need board to unhide 0 patch if cell number is 0
   cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
@@ -231,10 +220,6 @@ def clickCellsToUncoverHelper(og_cell, adj, cells_clicked, seen, hidden, board, 
     cells_to_unhide = unhideAllSurroundingSquares(hidden, board, row_index, cols_index, num_rows, num_cols)
     if len(cells_to_unhide) > 0:
       cells_clicked.append((row_index, cols_index))
-      print(adj)
-
-    print("about to print cells to unhide")
-    print(cells_to_unhide)
     for c in cells_to_unhide:
       hidden[int(c[0])][int(c[1])]=board[int(c[0])][int(c[1])]
       cells_clicked, cells_to_unhide = clickCellsToUncoverHelper(og_cell, c, cells_clicked, seen, hidden, board, num_rows, num_cols)
