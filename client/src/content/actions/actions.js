@@ -5,6 +5,8 @@ import {
   CHANGE_MODE,
   GENERATE_GAME,
   SOLVE,
+  GENERATING_BOARD,
+  RESET_MOVES
 } from "./actionTypes";
 import axios from "axios";
 
@@ -46,6 +48,9 @@ export function generateGame(row, cols) {
 
 export const solve = (num_rows, num_cols, num_mines) => dispatch => {
   var qs = require('qs')
+  dispatch({
+    type: GENERATING_BOARD
+  })
   axios
     .get('solver/?' + qs.stringify({'num_rows': num_rows, 'num_cols': num_cols, 'num_mines': num_mines}))
     .then(response => {
@@ -63,20 +68,27 @@ export const displayMoves = moves => dispatch => {
     console.log(item)
     if (typeof item[0] === "number") {
       //left click
-      dispatch({
-        type: SHOW_SQUARE,
-        row: item[0],
-        cols: item[1]
-      })
+      setTimeout(() => {
+        dispatch({
+          type: SHOW_SQUARE,
+          row: item[0],
+          cols: item[1]
+        })
+      }, 0)
     } else {
       //right click
       item.forEach(cell => {
-        dispatch({
-          type: FLAG_SQUARE,
-          row: cell[0],
-          cols: cell[1]
-        })
+        setTimeout(() => {
+          dispatch({
+            type: FLAG_SQUARE,
+            row: cell[0],
+            cols: cell[1]
+          })
+        }, 0)  
       });
     }
+    dispatch({
+      type: RESET_MOVES
+    })
   })
 }

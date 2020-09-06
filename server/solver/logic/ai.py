@@ -21,23 +21,23 @@ def generateBoard(num_rows, num_cols, num_mines):
         #b. for all shown cells around flag, if isComplete("F"), click cell to unhideAllSurroundingSquares
 
 def generateMoves(board, hidden, num_rows, num_cols, num_mines):
+  
   moves = []
-
   cell = findNextMove(board, hidden, num_rows, num_cols, num_mines) #need board to ensure first move hits a 0
+  #cell = [28,0]
   moves.append(cell)
-
   hidden = uncover(cell, hidden, board, num_rows, num_cols) #need board to unhide 0 patch if cell number is 0
-
   cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
 
   while len(cells_to_flag) > 0:
     moves.append(cells_to_flag) #cells_to_flag is a list of lists
     hidden = flagDefiniteMines(hidden, cells_to_flag) 
-
+    print(hidden)
     #keep clicking around the new flags 
     for cell in cells_to_flag:
       clickedCells, hidden = clickAdjacentCellsToUncover(cell, hidden, board, num_rows, num_cols) #need board to know which cells to unhide
       clickedCells = list(map(list, clickedCells))
+      print(clickedCells)
       moves += clickedCells
 
     #once there are no more "clicks", keep flagging
@@ -196,7 +196,6 @@ def flagDefiniteMines(hidden, mines):
     hidden[row_index][cols_index]="F"
   return hidden
 
-
 def clickAdjacentCellsToUncover(cell, hidden, board, num_rows, num_cols):
   """Clicks the adjacent cells of the flagged cell if isFlaggedComplete(adjacent cell), 
      and unhideAllSurroundingSquares of the clicked adjacent cells.
@@ -214,9 +213,10 @@ def clickAdjacentCellsToUncover(cell, hidden, board, num_rows, num_cols):
   -------
   A set of tuples (adjacent cells clicked), as well as the updated hidden. 
   """
-  cells_clicked = set()
+  cells_clicked = []
   seen = set()
   for adj in adjacent_cells_of(cell, num_rows, num_cols):
+    print(cell, adj)
     cells_clicked, hidden = clickCellsToUncoverHelper(cell, adj, cells_clicked, seen, hidden, board, num_rows, num_cols)
   return cells_clicked, hidden
 
@@ -226,10 +226,15 @@ def clickCellsToUncoverHelper(og_cell, adj, cells_clicked, seen, hidden, board, 
   
   row_index = int(adj[0])
   cols_index = int(adj[1])
-  if adj in adjacent_cells_of(og_cell, num_rows, num_cols) and hidden[row_index][cols_index] in [1,2,3,4,5,6,7,8] and isFlaggedComplete(hidden[row_index][cols_index], hidden, row_index, cols_index, num_rows, num_cols):
-    cells_clicked.add((row_index, cols_index))
+  if hidden[row_index][cols_index] in [1,2,3,4,5,6,7,8] and isFlaggedComplete(hidden[row_index][cols_index], hidden, row_index, cols_index, num_rows, num_cols):
     seen.add(adj)
     cells_to_unhide = unhideAllSurroundingSquares(hidden, board, row_index, cols_index, num_rows, num_cols)
+    if len(cells_to_unhide) > 0:
+      cells_clicked.append((row_index, cols_index))
+      print(adj)
+
+    print("about to print cells to unhide")
+    print(cells_to_unhide)
     for c in cells_to_unhide:
       hidden[int(c[0])][int(c[1])]=board[int(c[0])][int(c[1])]
       cells_clicked, cells_to_unhide = clickCellsToUncoverHelper(og_cell, c, cells_clicked, seen, hidden, board, num_rows, num_cols)

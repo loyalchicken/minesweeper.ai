@@ -75,8 +75,8 @@ def unhideAllSurroundingSquares(hidden, board, row_index, cols_index, num_rows, 
   for i in np.arange(max(0, row_index-1), min(num_rows-1, row_index+1)+1):
     for j in np.arange(max(0, cols_index-1), min(num_cols-1, cols_index+1)+1):
       if hidden[i][j]=="H":
-         setOfHiddenIndices.add((i,j))
-      if board[i][j]==0:
-        patchZeroSet = unhideSurroundingSquaresWithZero(board, i, j, num_rows, num_cols)
-        setOfHiddenIndices.update(list(patchZeroSet))
+        setOfHiddenIndices.add((i,j))
+        if board[i][j]==0:
+          patchZeroSet = unhideSurroundingSquaresWithZero(board, i, j, num_rows, num_cols)
+          setOfHiddenIndices.update(list(patchZeroSet))
   return setOfHiddenIndices
