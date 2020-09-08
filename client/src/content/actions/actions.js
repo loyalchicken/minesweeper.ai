@@ -64,8 +64,6 @@ export const solve = (num_rows, num_cols, num_mines) => dispatch => {
 
 export const displayMoves = moves => dispatch => {
   moves.forEach(item => {
-    console.log(typeof item[0]);
-    console.log(item)
     if (typeof item[0] === "number") {
       //left click
       setTimeout(() => {
@@ -74,7 +72,7 @@ export const displayMoves = moves => dispatch => {
           row: item[0],
           cols: item[1]
         })
-      }, 1000)
+      }, 0)
     } else {
       //right click
       item.forEach(cell => {
@@ -84,7 +82,7 @@ export const displayMoves = moves => dispatch => {
             row: cell[0],
             cols: cell[1]
           })
-        }, 1000)  
+        }, 0)  
       });
     }
     dispatch({

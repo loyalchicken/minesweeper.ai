@@ -129,9 +129,10 @@ export default function reducer(state = initialState, action) {
     case CHANGE_MODE:
       return {
         ...state,
-        gameMode: state.gameMode === "normal" ? "flagging" : "normal"
+        gameMode: state.gameMode === "normal" || state.gameMode === "ai" ? "flagging" : "normal"
       }
     case SOLVE:
+      console.log(action.moves)
       return {
         ...state,
         moves: action.moves,
