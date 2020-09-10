@@ -57,7 +57,8 @@ export const solve = (num_rows, num_cols, num_mines) => dispatch => {
       dispatch({
         type: SOLVE,
         board: response.data.board,
-        moves: response.data.moves
+        moves: response.data.moves,
+        segments: response.data.segments
       })
     })
 }

@@ -51,6 +51,15 @@ export class BoardHeader extends React.Component {
             Solve 
           </button>
         )}
+
+        {this.props.segments && (
+          <button
+            onClick={this.handleSegment}
+          >
+            Show segments
+          </button>
+          )
+        }
       </div>
     );
   }
@@ -61,7 +70,8 @@ const mapStateToProps = state => ({
   mines: state.mines,
   numRows: state.numRows,
   numColumns: state.numColumns,
-  numMines: state.numMines 
+  numMines: state.numMines,
+  segments: state.segments
 });
 
 const matchDispatchToProps = dispatch =>

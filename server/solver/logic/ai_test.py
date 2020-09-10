@@ -109,35 +109,40 @@ def test_findBorderHelper2():
   assert expected_seen == seen
   assert expected_border == border
 
-
+#makes sure flagged cells on border aren't considered in "graph"
 def test_findSegments():
   hidden = [
     [1,     2,   3],
     [1,     1,   3],
     ["H", "H", "H"],
-    ["H", "F", "F"]
+    ["H",   1, "F"]
   ]
   num_rows = 4
   num_cols = 3
 
   expected_graph= {
     (2,0): {(1,0), (1,1), (3,1)}, 
-    (2,1): {(1,0), (1,1), (1,2), (3,1), (3,2)},
-    (2,2): {(1,1), (1,2), (3,1), (3,2)},
+    (2,1): {(1,0), (1,1), (1,2), (3,1)},
+    (2,2): {(1,1), (1,2), (3,1)},
     (3,0): {(3,1)},
     (1,0): {(2,0), (2,1)},
     (1,1): {(2,0), (2,1), (2,2)},
     (1,2): {(2,1), (2,2)},
-    (3,1): {(3,0), (2,0), (2,1), (2,2)},
-    (3,2): {(2,1), (2,2)}
+    (3,1): {(3,0), (2,0), (2,1), (2,2)}
+  }
+  expected_segments = [{(3, 1), (1, 2), (1, 0), (1, 1)}]
+  expected_P_dict = {
+    (1,0): 1,
+    (1,1): 1,
+    (1,2): 3,
+    (3,1): 0
   }
 
-  graph, segments = findSegments(hidden, num_rows, num_cols)
-  expected_segments = [{(3, 2), (3, 1), (1, 2), (1, 0), (1, 1)}]
+  graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
 
   assert segments == expected_segments
   assert graph == expected_graph
-
+  assert P_dict == expected_P_dict
 
 def test_findSegment2():
   hidden = [
@@ -163,10 +168,19 @@ def test_findSegment2():
     (3,1): {(3,0), (3,2)},
     (2,2): {(3,2)}
   }
-  graph, segments = findSegments(hidden, num_rows, num_cols)
   expected_segments = [{(0,0), (0,1), (0,2)}, {(3,0), (3,2)}]
+  expected_P_dict = {
+    (0,0): 1,
+    (0,1): 1,
+    (0,2): 1,
+    (3,0): 1,
+    (3,2): 1
+  }
+
+  graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
   assert segments == expected_segments
   assert graph == expected_graph
+  assert P_dict == expected_P_dict
 
 def test_findSegment3():
   hidden = [
@@ -196,10 +210,18 @@ def test_findSegment3():
     (2,2): {(3,3)},
     (2,3): {(3,3)}
   }
-  graph, segments = findSegments(hidden, num_rows, num_cols)
   expected_segments = [{(3, 0)}, {(0, 3)}, {(0, 0)}, {(3, 3)}]
+  expected_P_dict = {
+    (0,0): 1,
+    (0,3): 1,
+    (3,0): 1,
+    (3,3): 1
+  }
+
+  graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
   assert segments == expected_segments
   assert graph == expected_graph
+  assert P_dict == expected_P_dict
 
 def test_dfs():
   graph = {

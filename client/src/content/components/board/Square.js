@@ -100,7 +100,8 @@ const mapStateToProps = state => ({
   visible: state.visible,
   gameMode: state.gameMode,
   activeGame: state.activeGame,
-  firstClick: state.firstClick
+  firstClick: state.firstClick,
+  segments: state.segments
 });
 
 export default connect(

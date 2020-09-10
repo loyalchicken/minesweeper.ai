@@ -11,7 +11,6 @@ def generateBoard(num_rows, num_cols, num_mines):
   return board, hidden
 
 def generateMoves(board, hidden, num_rows, num_cols, num_mines):
-  
   moves = []
   cells_flagged = set()
   cell = findNextMove(board, hidden, num_rows, num_cols, num_mines) #need board to ensure first move hits a 0
@@ -33,13 +32,17 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
 
     #once there are no more "clicks", keep flagging
     new_cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
+
     if new_cells_to_flag == cells_to_flag:
-      return moves
+      graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
+      return moves, segments
     cells_to_flag = new_cells_to_flag
     cells_to_flag = (cells_to_flag | cells_flagged) - cells_flagged
     cells_flagged = cells_flagged | cells_to_flag
   
-  return moves
+  graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
+  
+  return moves, segments
 
 ######################################## GENERATE MOVES HELPERS ########################################################
 
@@ -63,9 +66,9 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines):
     return findRandomZeroCell(board, num_rows, num_cols)
 
   nextMoves = []
-  segments = findSegments(hidden, num_rows, num_cols)
+  graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
   for segment in segments:
-    probabilityMap = backtrack(hidden, board, segment, num_rows, num_cols)
+    probabilityMap = backtrack(hidden, board, segment, graph, P_dict, num_rows, num_cols)
     #append all the keys associated to value 1 to nextMoves 
   
   #if nextMoves is empty (no definite moves, we have to guess)
@@ -106,15 +109,41 @@ def findRandomZeroCell(board, num_rows, num_cols):
       row_index, cols_index = convertFrom1Dto2D(np.random.randint(num_rows*num_cols), num_cols)
   return [int(row_index), int(cols_index)]
 
-#def backtrack(hidden, board, segment, num_rows, num_cols):
+
+def backtrack(hidden, board, segment, graph, P_dict, num_rows, num_cols):
+  """Finds all consistent mine configurations and generates a probability map (hidden cell -> probability not a mine)
+     The process of finding solutions to each segment is formulated as a Constraint Satisfaction Problem (CSP):
+      - Variables: The set of n hidden cells adjacent to the segment {X1, ..., Xn}
+      - Domain: {0,1}
+      - Constraints: 
+          Let {Y1, ..., Ym} be the set of m border cells in current segment
+          Each border cell is associated with its number of adjacent hidden cells which are mines, which we call {P1, ..., Pm}
+          Then, for each cell, Yi, in the segment, a constraint is given by the following equation 
+              Pi = sum(graph[Yi]), where graph[Yi] is a set of Yi's adjacent hidden cells, {Xi1, ..., Xiq}
+
+  Parameters
+  ----------
+  hidden     a 2D character array of visible state of cells [index by row, then column] 
+  board      2D integer array [index by row, then column]
+  segment    set of cells in the current segment to perform backtracking
+  graph      adjacency list of all border cells in current hidden state (use this to access hidden cells adjacent to each border cell)
+  P_dict     maps each border cell to its number of adjacent hidden cells which are mines {Y1: P1, ..., Ym: Pm}
+  num_rows   number of rows
+  num_cols   number of columns
+
+  Returns
+  -------
+  A dictionary that maps hidden cells (adjacent to the current segment) to probabilities
+  """
   #get all hidden cells adjacent to segment, ie. the variables 
   #domain of CSP is {0,1}
   #constraints are given by iterating through each cell in segment
   #find all possible solutions
   #assuming all solutions are equally likely, generate a probability map 
+  return 0
 
 def findSegments(hidden, num_rows, num_cols):
-  """Returns a list of segments (sets of border cells which share hidden cells) to backtrack on
+  """Returns a list of segments (sets of non-flagged border cells which share hidden cells) to backtrack on
   
   Parameters
   ----------
@@ -124,31 +153,45 @@ def findSegments(hidden, num_rows, num_cols):
 
   Returns
   -------
-  A list of sets
+  1) a dictionary that maps border cells to their adjacent hidden cells, 
+  2) a list of segments (sets),
+  3) a dictionary that maps each border cell to its number of adjacent hidden cells which are mines
   """
   segments=[]
   graph = dict()
   border_cells = findBorder(hidden, num_rows, num_cols)
+  P_dict = dict()
 
-  #constructs undirected bipartite graph (one side hidden cells, other side border cells)
+  #graph: constructs undirected bipartite graph (one side hidden cells, other side border cells)
+  #P_dict: initializes each cell to hidden[cell], and subtracts 1 for each adjacent flag
   for cell in border_cells:
+    #we only care about cells on the border that aren't flagged
+    if hidden[cell[0]][cell[1]]=="F":
+      continue
+
     if cell not in graph:
       graph[cell]=set()
+
+    if cell not in P_dict:
+      P_dict[cell]=hidden[cell[0]][cell[1]]
+
     for adj in adjacent_cells_of(cell, num_rows, num_cols):
       if hidden[adj[0]][adj[1]] == "H":
         if adj not in graph:
           graph[adj]=set()
         graph[adj].add(cell)
         graph[cell].add(adj)
-  
+      if hidden[adj[0]][adj[1]] == "F":
+        P_dict[cell]-=1
+
   #finds all connected components, and extract the border cells from component for each segment
   seen = set()
-  vertices = list(graph.keys())
-  for v in vertices:
+  for v, _ in graph.items():
     if v not in seen:
       seen, segment = dfs(v, graph, seen, set())
       segments.append(segment.intersection(border_cells))
-  return graph, segments
+
+  return graph, segments, P_dict
 
 def dfs(vertex, graph, seen, segment):
   seen.add(vertex)
