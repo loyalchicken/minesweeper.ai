@@ -1,7 +1,7 @@
 import numpy as np
 from solver.logic.unhide_helpers import unhideSurroundingSquaresWithZero, unhideSurroundingSquaresWithZeroHelper, isFlaggedComplete, unhideAllSurroundingSquares
 from solver.logic.board_helpers import convertFrom1Dto2D, generateMines, generateNumbersArr
-from solver.logic.utilities import adjacent_cells_of
+from solver.logic.utilities import adjacent_cells_of, connected_cells_of
 ############################################# SOLVER #########################################################
 
 def generateBoard(num_rows, num_cols, num_mines):
@@ -18,6 +18,7 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
   moves.append(cell)
   hidden = uncover(cell, hidden, board, num_rows, num_cols) #need board to unhide 0 patch if cell number is 0
   cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
+
   cells_to_flag = (cells_to_flag | cells_flagged) - cells_flagged
   cells_flagged = cells_flagged | cells_to_flag
 
@@ -37,6 +38,7 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
     cells_to_flag = new_cells_to_flag
     cells_to_flag = (cells_to_flag | cells_flagged) - cells_flagged
     cells_flagged = cells_flagged | cells_to_flag
+  
   return moves
 
 ######################################## GENERATE MOVES HELPERS ########################################################
@@ -60,6 +62,16 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines):
   if firstMove(hidden, num_rows, num_cols):
     return findRandomZeroCell(board, num_rows, num_cols)
 
+  nextMoves = []
+  segments = findSegments(hidden, num_rows, num_cols)
+  for segment in segments:
+    probabilityMap = backtrack(hidden, board, segment, num_rows, num_cols)
+    #append all the keys associated to value 1 to nextMoves 
+  
+  #if nextMoves is empty (no definite moves, we have to guess)
+  #if max(probabilities) < randomProbability(), then return random hidden cell
+  #else return cell with max(probability) 
+
 ####### findNextMove HELPER FUNCTIONS ########
 def firstMove(hidden, num_rows, num_cols):
   """Checks whether all cells in board are hidden.
@@ -75,7 +87,6 @@ def firstMove(hidden, num_rows, num_cols):
   A boolean
   """
   return len(np.argwhere(np.array(hidden)=='H')) == num_rows*num_cols
-
 
 def findRandomZeroCell(board, num_rows, num_cols):
   """Finds a random cell (tuple) that has number "0"
@@ -95,6 +106,110 @@ def findRandomZeroCell(board, num_rows, num_cols):
       row_index, cols_index = convertFrom1Dto2D(np.random.randint(num_rows*num_cols), num_cols)
   return [int(row_index), int(cols_index)]
 
+#def backtrack(hidden, board, segment, num_rows, num_cols):
+  #get all hidden cells adjacent to segment, ie. the variables 
+  #domain of CSP is {0,1}
+  #constraints are given by iterating through each cell in segment
+  #find all possible solutions
+  #assuming all solutions are equally likely, generate a probability map 
+
+def findSegments(hidden, num_rows, num_cols):
+  """Returns a list of segments (sets of border cells which share hidden cells) to backtrack on
+  
+  Parameters
+  ----------
+  hidden     a 2D character array of visible state of cells [index by row, then column] 
+  num_rows   number of rows
+  num_cols   number of columns
+
+  Returns
+  -------
+  A list of sets
+  """
+  segments=[]
+  graph = dict()
+  border_cells = findBorder(hidden, num_rows, num_cols)
+
+  #constructs undirected bipartite graph (one side hidden cells, other side border cells)
+  for cell in border_cells:
+    if cell not in graph:
+      graph[cell]=set()
+    for adj in adjacent_cells_of(cell, num_rows, num_cols):
+      if hidden[adj[0]][adj[1]] == "H":
+        if adj not in graph:
+          graph[adj]=set()
+        graph[adj].add(cell)
+        graph[cell].add(adj)
+  
+  #finds all connected components, and extract the border cells from component for each segment
+  seen = set()
+  vertices = list(graph.keys())
+  for v in vertices:
+    if v not in seen:
+      seen, segment = dfs(v, graph, seen, set())
+      segments.append(segment.intersection(border_cells))
+  return graph, segments
+
+def dfs(vertex, graph, seen, segment):
+  seen.add(vertex)
+  segment.add(vertex)
+  for adj in graph[vertex]:
+    if adj not in seen:
+      seen, segment = dfs(adj, graph, seen, segment)
+  return seen, segment
+
+def findBorder(hidden, num_rows, num_cols):
+  """Find all cells on the border of the "non-hidden islands"  
+     Recurses through each island (findBorderHelper) to find its border.  
+  Parameters
+  ----------
+  hidden     a 2D character array of visible state of cells [index by row, then column] 
+  num_rows   number of rows
+  num_cols   number of columns
+
+  Returns
+  -------
+  Set of cells on border
+  """
+  seen = set()
+  border = set()
+
+  for i in range(num_rows):
+    for j in range(num_cols):
+      if hidden[i][j] != "H" and (i,j) not in seen:
+        new_border, seen = findBorderHelper(hidden, seen, i, j, num_rows, num_cols, border)
+        border = border | new_border
+  return border
+
+def findBorderHelper(hidden, seen, row_index, cols_index, num_rows, num_cols, border):
+  """Finds all cells on the border of the island (row_index, cols_index) is in
+  Parameters
+  ----------
+  hidden     a 2D character array of visible state of cells [index by row, then column] 
+  seen       set of cells on board already visited
+  row_index  row index of current cell
+  cols_index column index of current cell
+  num_rows   number of rows
+  num_cols   number of columns
+  border     the cells in the border of current island so far
+
+  Returns
+  -------
+  Set of cells on border of current island
+  """
+  if hidden[row_index][cols_index] == "H" or (row_index,cols_index) in seen:
+    return border, seen
+  seen.add((row_index,cols_index))
+
+  #any cell adjacent to a hidden cell is considered on the border
+  for cell in adjacent_cells_of((row_index,cols_index), num_rows, num_cols):
+    if hidden[cell[0]][cell[1]] == "H":
+      border.add((row_index,cols_index))
+  
+  #only recurse on connected cells (ie. ones that share an edge)
+  for cell in connected_cells_of((row_index,cols_index), num_rows, num_cols):
+    border, seen = findBorderHelper(hidden, seen, cell[0], cell[1], num_rows, num_cols, border)
+  return border, seen
 
 def uncover(cell, hidden, board, num_rows, num_cols):
   """Updates cell in hidden to "S", unhide adjacent "0" patch if cell is 0, and return updated hidden.
@@ -116,8 +231,6 @@ def uncover(cell, hidden, board, num_rows, num_cols):
     for c in cells_to_unhide:
       hidden[c[0]][c[1]]=board[c[0]][c[1]]
   return hidden
-
-
 
 def findDefiniteMines(hidden, num_rows, num_cols):
   """Returns the cells which are definitely mines (to be flagged) by iterating through all shown cells
@@ -141,7 +254,6 @@ def findDefiniteMines(hidden, num_rows, num_cols):
         if complete: 
           cells = cells | hiddenCells
   return cells
-
 
 def isHiddenComplete(num_adjacent_mines, hidden, row_index, cols_index, num_rows, num_cols):
   """Checks whether the number of adjacent cells hidden + flagged equals the number of the cell,
@@ -167,7 +279,6 @@ def isHiddenComplete(num_adjacent_mines, hidden, row_index, cols_index, num_rows
       num_hidden += 1
       hiddenSet.add((int(cell[0]),int(cell[1])))
   return num_hidden == num_adjacent_mines, hiddenSet
-
 
 def flagDefiniteMines(hidden, mines):
   """Updates the cells that are definite mines in hidden to "F", and return updated hidden.
@@ -225,7 +336,6 @@ def clickCellsToUncoverHelper(cell, cells_clicked, seen, hidden, board, num_rows
   -------
   A list of the cells to click, as well as updated hidden. 
   """
- 
   if cell in seen:
     return cells_clicked, hidden
   
@@ -239,5 +349,5 @@ def clickCellsToUncoverHelper(cell, cells_clicked, seen, hidden, board, num_rows
     for c in cells_to_unhide:
       hidden[int(c[0])][int(c[1])]=board[int(c[0])][int(c[1])]
     for c in cells_to_unhide:
-      cells_clicked, cells_to_unhide = clickCellsToUncoverHelper(c, cells_clicked, seen, hidden, board, num_rows, num_cols)
+      cells_clicked, hidden = clickCellsToUncoverHelper(c, cells_clicked, seen, hidden, board, num_rows, num_cols)
   return cells_clicked, hidden

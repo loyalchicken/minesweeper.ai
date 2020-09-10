@@ -1,5 +1,6 @@
 from solver.logic.ai import firstMove, findRandomZeroCell, uncover, findDefiniteMines, isHiddenComplete, flagDefiniteMines, clickAdjacentCellsToUncover
 from solver.logic.ai import generateBoard, generateMoves 
+from solver.logic.ai import findSegments, dfs, findBorder, findBorderHelper
 
 import numpy as np
 
@@ -40,6 +41,151 @@ def test_findRandomZeroCell():
   assert findRandomZeroCell(board, num_rows, num_cols) == [1,2]
   assert findRandomZeroCell(board2, num_rows, num_cols) == [0,0]
 
+def test_findBorder():
+  hidden = [
+    ["H",   2, "H"],
+    [1,     1, "F"],
+    ["H",   2, "H"],
+    [2,   "H", "H"]
+  ]
+  num_rows = 4
+  num_cols = 3
+
+  border = findBorder(hidden, num_rows, num_cols)
+  expected_border = {(1,0), (1,1), (1,2), (0,1), (2,1), (3,0)}
+  assert expected_border == border
+
+def test_findBorder2():
+  hidden = [
+    [1,     2,   3],
+    [1,     1,   3],
+    ["H", "H", "H"],
+    ["H", "F", "F"]
+  ]
+  num_rows = 4
+  num_cols = 3
+
+  border = findBorder(hidden, num_rows, num_cols)
+  expected_border = {(1,0), (1,1), (1,2), (3,1), (3,2)}
+  assert expected_border == border
+
+def test_findBorderHelper():
+  hidden = [
+    ["H", "H", "H"],
+    [1,     1, "H"],
+    ["F",   2, "H"],
+    ["F",   2,   0]
+  ]
+  seen = set()
+  row_index = 1
+  cols_index = 0
+  border = set()
+  num_rows = 4
+  num_cols = 3
+
+  border, seen = findBorderHelper(hidden, seen, row_index, cols_index, num_rows, num_cols, border)
+  expected_seen = {(1,0), (1,1), (2,0), (2,1), (3,0), (3,1), (3,2)}
+  expected_border = {(1,0), (1,1), (2,1), (3,1), (3,2)}
+  assert expected_seen == seen
+  assert expected_border == border
+
+def test_findBorderHelper2():
+  hidden = [
+    ["H",   2, "H"],
+    [1,     1, "F"],
+    ["H",   2, "H"],
+    [2,   "H", "H"]
+  ]
+  seen = set()
+  row_index = 1
+  cols_index = 0
+  border = set()
+  num_rows = 4
+  num_cols = 3
+
+  border, seen = findBorderHelper(hidden, seen, row_index, cols_index, num_rows, num_cols, border)
+  expected_seen = {(1,0), (1,1), (1,2), (0,1), (2,1)}
+  expected_border = {(1,0), (1,1), (1,2), (0,1), (2,1)}
+  assert expected_seen == seen
+  assert expected_border == border
+
+
+def test_findSegments():
+  hidden = [
+    [1,     2,   3],
+    [1,     1,   3],
+    ["H", "H", "H"],
+    ["H", "F", "F"]
+  ]
+  num_rows = 4
+  num_cols = 3
+
+  expected_graph= {
+    (2,0): {(1,0), (1,1), (3,1)}, 
+    (2,1): {(1,0), (1,1), (1,2), (3,1), (3,2)},
+    (2,2): {(1,1), (1,2), (3,1), (3,2)},
+    (3,0): {(3,1)},
+    (1,0): {(2,0), (2,1)},
+    (1,1): {(2,0), (2,1), (2,2)},
+    (1,2): {(2,1), (2,2)},
+    (3,1): {(3,0), (2,0), (2,1), (2,2)},
+    (3,2): {(2,1), (2,2)}
+  }
+
+  graph, segments = findSegments(hidden, num_rows, num_cols)
+  expected_segments = [{(3, 2), (3, 1), (1, 2), (1, 0), (1, 1)}]
+
+  assert segments == expected_segments
+  assert graph == expected_graph
+
+
+def test_findSegment2():
+  hidden = [
+    [1,     1,   1],
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    [1,   "H",   1]
+  ]
+  num_rows = 4
+  num_cols = 3
+
+  expected_graph= {
+    (0,0): {(1,0), (1,1)},
+    (0,1): {(1,0), (1,1), (1,2)},
+    (0,2): {(1,1), (1,2)},
+    (3,0): {(2,0), (2,1), (3,1)},
+    (3,2): {(3,1), (2,1), (2,2)},
+    (1,0): {(0,0), (0,1)},
+    (1,1): {(0,0), (0,1), (0,2)},
+    (1,2): {(0,1), (0,2)},
+    (2,0): {(3,0)},
+    (2,1): {(3,0), (3,2)},
+    (3,1): {(3,0), (3,2)},
+    (2,2): {(3,2)}
+  }
+  graph, segments = findSegments(hidden, num_rows, num_cols)
+  expected_segments = [{(0,0), (0,1), (0,2)}, {(3,0), (3,2)}]
+  assert segments == expected_segments
+  assert graph == expected_graph
+
+def test_dfs():
+  graph = {
+    (2,0): {(1,0), (1,1), (3,1)}, 
+    (2,1): {(1,0), (1,1), (1,2), (3,1), (3,2)},
+    (2,2): {(1,1), (1,2), (3,1), (3,2)},
+    (3,0): {(3,1)},
+    (1,0): {(2,0), (2,1)},
+    (1,1): {(2,0), (2,1), (2,2)},
+    (1,2): {(2,1), (2,2)},
+    (3,1): {(3,0), (2,0), (2,1), (2,2)},
+    (3,2): {(2,1), (2,2)}
+  }
+  start_vertex = (1,1)
+  seen, segment = dfs(start_vertex, graph, set(), set())
+  expected_segment = {(1, 2), (3, 2), (3, 0), (3, 1), (2, 1), (2, 0), (2, 2), (1, 0), (1, 1)}
+  expected_seen = {(1, 2), (3, 2), (3, 0), (3, 1), (2, 1), (2, 0), (2, 2), (1, 0), (1, 1)}
+  assert seen == expected_seen
+  assert segment == expected_segment
 
 def test_uncover():
   board = [

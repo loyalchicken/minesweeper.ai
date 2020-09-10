@@ -10,3 +10,16 @@ def adjacent_cells_of(cell, num_rows, num_cols):
         cells.append((int(i),int(j)))
   return cells
 
+def connected_cells_of(cell, num_rows, num_cols):
+  cells = []
+  row_index = cell[0]
+  cols_index = cell[1]
+  if row_index-1>=0:
+    cells.append((row_index-1, cols_index))
+  if cols_index-1>=0:
+    cells.append((row_index, cols_index-1))
+  if cols_index<num_cols-1:
+    cells.append((row_index, cols_index+1))
+  if row_index<num_rows-1:
+    cells.append((row_index+1, cols_index))
+  return cells
