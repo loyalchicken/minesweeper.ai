@@ -168,6 +168,39 @@ def test_findSegment2():
   assert segments == expected_segments
   assert graph == expected_graph
 
+def test_findSegment3():
+  hidden = [
+    [1,   "H",  "H",   1],
+    ["H", "H",  "H", "H"],
+    ["H", "H",  "H", "H"],
+    [1,   "H",  "H",   1]
+  ]
+  num_rows = 4
+  num_cols = 4
+
+  expected_graph= {
+    (0,0): {(1,0), (1,1), (0,1)},
+    (0,3): {(0,2), (1,2), (1,3)},
+    (3,0): {(2,0), (2,1), (3,1)},
+    (3,3): {(3,2), (2,2), (2,3)},
+    (0,1): {(0,0)},
+    (1,1): {(0,0)},
+    (1,0): {(0,0)},
+    (0,2): {(0,3)},
+    (1,2): {(0,3)},
+    (1,3): {(0,3)},
+    (2,0): {(3,0)},
+    (2,1): {(3,0)},
+    (3,1): {(3,0)},
+    (3,2): {(3,3)},
+    (2,2): {(3,3)},
+    (2,3): {(3,3)}
+  }
+  graph, segments = findSegments(hidden, num_rows, num_cols)
+  expected_segments = [{(3, 0)}, {(0, 3)}, {(0, 0)}, {(3, 3)}]
+  assert segments == expected_segments
+  assert graph == expected_graph
+
 def test_dfs():
   graph = {
     (2,0): {(1,0), (1,1), (3,1)}, 
