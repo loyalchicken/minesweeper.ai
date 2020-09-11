@@ -68,7 +68,7 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines):
   nextMoves = []
   graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
   for segment in segments:
-    probabilityMap = backtrack(hidden, board, segment, graph, P_dict, num_rows, num_cols)
+    _, solutions = backtrack(hidden, segment, graph, P_dict)
     #append all the keys associated to value 1 to nextMoves 
   
   #if nextMoves is empty (no definite moves, we have to guess)
@@ -109,8 +109,7 @@ def findRandomZeroCell(board, num_rows, num_cols):
       row_index, cols_index = convertFrom1Dto2D(np.random.randint(num_rows*num_cols), num_cols)
   return [int(row_index), int(cols_index)]
 
-
-def backtrack(hidden, board, segment, graph, P_dict, num_rows, num_cols):
+def backtrack(hidden, segment, graph, P_dict):
   """Finds all consistent mine configurations and generates a probability map (hidden cell -> probability not a mine)
      The process of finding solutions to each segment is formulated as a Constraint Satisfaction Problem (CSP):
       - Variables: The set of n hidden cells adjacent to the segment {X1, ..., Xn}
@@ -119,12 +118,11 @@ def backtrack(hidden, board, segment, graph, P_dict, num_rows, num_cols):
           Let {Y1, ..., Ym} be the set of m border cells in current segment
           Each border cell is associated with its number of adjacent hidden cells which are mines, which we call {P1, ..., Pm}
           Then, for each cell, Yi, in the segment, a constraint is given by the following equation 
-              Pi = sum(graph[Yi]), where graph[Yi] is a set of Yi's adjacent hidden cells, {Xi1, ..., Xiq}
+              (P_dict[Yi] = Pi) = sum(graph[Yi]), where graph[Yi] is a set of Yi's adjacent hidden cells, {Xi1, ..., Xiq}
 
   Parameters
   ----------
   hidden     a 2D character array of visible state of cells [index by row, then column] 
-  board      2D integer array [index by row, then column]
   segment    set of cells in the current segment to perform backtracking
   graph      adjacency list of all border cells in current hidden state (use this to access hidden cells adjacent to each border cell)
   P_dict     maps each border cell to its number of adjacent hidden cells which are mines {Y1: P1, ..., Ym: Pm}
@@ -135,12 +133,80 @@ def backtrack(hidden, board, segment, graph, P_dict, num_rows, num_cols):
   -------
   A dictionary that maps hidden cells (adjacent to the current segment) to probabilities
   """
-  #get all hidden cells adjacent to segment, ie. the variables 
-  #domain of CSP is {0,1}
-  #constraints are given by iterating through each cell in segment
-  #find all possible solutions
-  #assuming all solutions are equally likely, generate a probability map 
-  return 0
+  variables = list(getAllAdjacentHiddenCellsOfSegment(segment, graph))   
+  return recursiveBacktrack(dict(), variables, segment, graph, P_dict, hidden, [])
+
+def recursiveBacktrack(assignment, variables, segment, graph, P_dict, hidden, solutions):
+  print(assignment)
+  if len(assignment) == len(variables):
+    solutions.append(assignment)
+    return assignment, solutions
+  
+  next_assigned_var = selectUnassignedVariable(variables, assignment)
+  for i in [0,1]:
+    if isAssignmentConsistent(next_assigned_var, i, assignment, segment, graph, P_dict):
+      assignment[next_assigned_var] = i
+      result, solutions = recursiveBacktrack(assignment, variables, segment, graph, P_dict, hidden, solutions)
+      if result != "fail":
+        return result, solutions
+      del assignment[next_assigned_var]
+      print(assignment)
+  return "fail", solutions
+
+def getAllAdjacentHiddenCellsOfSegment(segment, graph):
+  variables = set()
+  for cell in segment:
+    adj_cells = graph[cell]
+    for adj in adj_cells:
+      variables.add(adj)
+  return variables
+
+def selectUnassignedVariable(variables, assignment):
+  """find the next variable (cell) to be assigned (ordered)
+
+  Parameters
+  ----------
+  variables     list of hidden cells adjacent to segment of relevance
+  assignment    dictionary of current assignment of values to variables
+
+  Returns
+  a cell (tuple)
+  """
+  num_assigned = len(assignment)
+  return variables[num_assigned]
+
+def isAssignmentConsistent(var, value, assignment, segment, graph, P_dict):
+  """Checks if adding current variable with value to assignment is consistent given constraints
+
+  Parameters
+  ----------
+  var        the variable to be added next to assignment
+  value      the value to add variable to assignment with
+  assignment dictionary of current assignment of values to variables
+  segment    set of cells in the current segment to perform backtracking
+  graph      adjacency list of all border cells in current hidden state (use this to access hidden cells adjacent to each border cell)
+  P_dict     maps each border cell to its number of adjacent hidden cells which are mines {Y1: P1, ..., Ym: Pm}
+
+  Returns
+  -------
+  a boolean
+  """
+  assignment[var] = value
+  for cell in segment:
+    bool_complete = True #bool_complete keeps track of whether all adj cells of cell has an assignment
+    sum = 0 
+    adjacent_hidden_cells = graph[cell]
+    for adj in adjacent_hidden_cells:
+      if adj not in assignment:
+        bool_complete = False
+        continue
+      sum += assignment[adj]
+    #all adjacent_hidden_cells are assigned for current border cell
+    if P_dict[cell] < sum: #more cells assigned mines than there should be
+      return False
+    if bool_complete == True and P_dict[cell] != sum: #assignment complete and not equal
+      return False
+  return True
 
 def findSegments(hidden, num_rows, num_cols):
   """Returns a list of segments (sets of non-flagged border cells which share hidden cells) to backtrack on

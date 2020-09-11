@@ -1,6 +1,7 @@
 from solver.logic.ai import firstMove, findRandomZeroCell, uncover, findDefiniteMines, isHiddenComplete, flagDefiniteMines, clickAdjacentCellsToUncover
 from solver.logic.ai import generateBoard, generateMoves 
 from solver.logic.ai import findSegments, dfs, findBorder, findBorderHelper
+from solver.logic.ai import isAssignmentConsistent, getAllAdjacentHiddenCellsOfSegment, selectUnassignedVariable, recursiveBacktrack, backtrack
 
 import numpy as np
 
@@ -40,6 +41,364 @@ def test_findRandomZeroCell():
   num_cols=3
   assert findRandomZeroCell(board, num_rows, num_cols) == [1,2]
   assert findRandomZeroCell(board2, num_rows, num_cols) == [0,0]
+
+def test_backtrack():
+  hidden = [
+    [1,     2,   3],
+    [1,     1,   1],
+    ["H", "H", "H"],
+    ["H",   2, "F"]
+  ]
+  graph = {
+    (2,0): {(1,0), (1,1), (3,1)}, 
+    (2,1): {(1,0), (1,1), (1,2), (3,1)},
+    (2,2): {(1,1), (1,2), (3,1)},
+    (3,0): {(3,1)},
+    (1,0): {(2,0), (2,1)},
+    (1,1): {(2,0), (2,1), (2,2)},
+    (1,2): {(2,1), (2,2)},
+    (3,1): {(3,0), (2,0), (2,1), (2,2)}
+  }
+  segment = {(3, 1), (1, 2), (1, 0), (1, 1)}
+  P_dict = {
+    (1,0): 1,
+    (1,1): 1,
+    (1,2): 1,
+    (3,1): 1
+  }
+  _, solutions = backtrack(hidden, segment, graph, P_dict)
+  expected_solutions = [{(2, 0): 0, (2, 1): 1, (2, 2): 0, (3, 0): 0}]
+  assert solutions == expected_solutions
+
+def test_backtrack2():
+  hidden = [
+    [1,     1,   1],
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    [1,   "H",   1]
+  ]
+  graph = {
+    (0,0): {(1,0), (1,1)},
+    (0,1): {(1,0), (1,1), (1,2)},
+    (0,2): {(1,1), (1,2)},
+    (3,0): {(2,0), (2,1), (3,1)},
+    (3,2): {(3,1), (2,1), (2,2)},
+    (1,0): {(0,0), (0,1)},
+    (1,1): {(0,0), (0,1), (0,2)},
+    (1,2): {(0,1), (0,2)},
+    (2,0): {(3,0)},
+    (2,1): {(3,0), (3,2)},
+    (3,1): {(3,0), (3,2)},
+    (2,2): {(3,2)}
+  }
+  segment = {(0,0), (0,1), (0,2)}
+  P_dict = {
+    (0,0): 1,
+    (0,1): 1,
+    (0,2): 1,
+    (3,0): 1,
+    (3,2): 1
+  }
+  segment2 = {(3,0), (3,2)}
+  _, solutions = backtrack(hidden, segment, graph, P_dict)
+  _, solutions2 = backtrack(hidden, segment2, graph, P_dict)
+  expected_solutions = [{(1,0): 0, (1,1): 1, (1,2): 0}]
+  expected_solutions2 = [
+    {(2, 0): 0, (2, 1): 1, (2, 2): 0, (3, 1): 0}, 
+    {(2, 0): 0, (2, 1): 0, (2, 2): 0, (3, 1): 1}
+  ]
+  assert solutions == expected_solutions
+  #assert solutions2 == expected_solutions2
+
+def test_backtrack3():
+  hidden = [
+    [1,     1,   1],
+    ["H", "H", "H"],
+    ["H", "H", "H"],
+    [1,   "H",   1]
+  ]
+  graph = {
+    (0,0): {(1,0), (1,1)},
+    (0,1): {(1,0), (1,1), (1,2)},
+    (0,2): {(1,1), (1,2)},
+    (3,0): {(2,0), (2,1), (3,1)},
+    (3,2): {(3,1), (2,1), (2,2)},
+    (1,0): {(0,0), (0,1)},
+    (1,1): {(0,0), (0,1), (0,2)},
+    (1,2): {(0,1), (0,2)},
+    (2,0): {(3,0)},
+    (2,1): {(3,0), (3,2)},
+    (3,1): {(3,0), (3,2)},
+    (2,2): {(3,2)}
+  }
+  P_dict = {
+    (0,0): 1,
+    (0,1): 1,
+    (0,2): 1,
+    (3,0): 1,
+    (3,2): 1
+  }
+  segment = {(3,0), (3,2)}
+  _, solutions = backtrack(hidden, segment, graph, P_dict)
+  expected_solutions = [
+    {(2, 0): 0, (2, 1): 1, (2, 2): 0, (3, 1): 0}, 
+    {(2, 0): 0, (2, 1): 0, (2, 2): 0, (3, 1): 1}
+  ]
+  assert solutions == expected_solutions
+
+def test_getAllAdjacentHiddenCellsOfSegment():
+  #hidden = [
+  #  [1,     1,   1],
+  #  ["H", "H", "H"],
+  #  ["H", "H", "H"],
+  #  [1,   "H",   1]
+  #]
+  #num_rows = 4
+  #num_cols = 3
+  graph= {
+    (0,0): {(1,0), (1,1)},
+    (0,1): {(1,0), (1,1), (1,2)},
+    (0,2): {(1,1), (1,2)},
+    (3,0): {(2,0), (2,1), (3,1)},
+    (3,2): {(3,1), (2,1), (2,2)},
+    (1,0): {(0,0), (0,1)},
+    (1,1): {(0,0), (0,1), (0,2)},
+    (1,2): {(0,1), (0,2)},
+    (2,0): {(3,0)},
+    (2,1): {(3,0), (3,2)},
+    (3,1): {(3,0), (3,2)},
+    (2,2): {(3,2)}
+  }
+  #expected_segments = [{(0,0), (0,1), (0,2)}, {(3,0), (3,2)}]
+  segment = {(0,0), (0,1), (0,2)}
+  expected_variables = {(1,0), (1,1), (1,2)}
+  assert getAllAdjacentHiddenCellsOfSegment(segment, graph) == expected_variables
+
+  segment = {(3,0), (3,2)}
+  expected_variables = {(2,0), (2,1), (2,2), (3,1)}
+  assert getAllAdjacentHiddenCellsOfSegment(segment, graph) == expected_variables
+
+
+def test_selectUnassignedVariable():
+  variables = [(0,0), (1,1), (2,2)]
+  assignment = {}
+  assert selectUnassignedVariable(variables, assignment) == (0,0)
+
+  variables = [(0,0), (1,1), (2,2)]
+  assignment = {(0,0), (1,1)}
+  assert selectUnassignedVariable(variables, assignment) == (2,2)
+
+  variables = [(0,0), (1,1), (2,2)]
+  assignment = {(0,0)}
+  assert selectUnassignedVariable(variables, assignment) == (1,1)
+
+def test_isAssignmentConsistent():
+  hidden = [
+    [1,     2,   3],
+    [1,     1,   1],
+    ["H", "H", "H"],
+    ["H",   2, "F"]
+  ]
+  num_rows = 4
+  num_cols = 3
+
+  graph = {
+    (2,0): {(1,0), (1,1), (3,1)}, 
+    (2,1): {(1,0), (1,1), (1,2), (3,1)},
+    (2,2): {(1,1), (1,2), (3,1)},
+    (3,0): {(3,1)},
+    (1,0): {(2,0), (2,1)},
+    (1,1): {(2,0), (2,1), (2,2)},
+    (1,2): {(2,1), (2,2)},
+    (3,1): {(3,0), (2,0), (2,1), (2,2)}
+  }
+  segment = {(3, 1), (1, 2), (1, 0), (1, 1)}
+  P_dict = {
+    (1,0): 1,
+    (1,1): 1,
+    (1,2): 1,
+    (3,1): 1
+  }  
+
+  ###### assignment: {(2,0): 1} ######
+  assignment = {(2,0): 1}
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+  assignment = {(2,0): 1}
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+  assignment = {(2,0): 1}
+  var = (2,2)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+  assignment = {(2,0): 1}
+  var = (2,2)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+  assignment = {(2,0): 1}
+  var = (3,0)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 1}
+  var = (3,0)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+
+  ###### assignment: {(2,0): 0} ######
+  assignment = {(2,0): 0}
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 0}
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+
+  assignment = {(2,0): 0}
+  var = (2,2)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+  assignment = {(2,0): 0}
+  var = (2,2)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+
+  assignment = {(2,0): 0}
+  var = (3,0)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+  assignment = {(2,0): 0}
+  var = (3,0)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+
+
+  ###### assignment: {(2,0): 0, (2,2): 1} ######
+  assignment = {(2,0): 0, (2,2): 1}  
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 0, (2,2): 1}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+  assignment = {(2,0): 0, (2,2): 1}  
+  var = (3,0)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+  assignment = {(2,0): 0, (2,2): 1}  
+  var = (3,0)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+
+  ###### assignment: {(2,0): 0, (2,2): 0} ######
+  assignment = {(2,0): 0, (2,2): 0}  
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 0, (2,2): 0}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+
+  assignment = {(2,0): 0, (2,2): 0}  
+  var = (3,0)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+  assignment = {(2,0): 0, (2,2): 0}  
+  var = (3,0)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+
+
+  ###### assignment: {(2,0): 0, (2,2): 0, (3,0): 0} ######
+  assignment = {(2,0): 0, (2,2): 0, (3,0): 0}  
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 0, (2,2): 0, (3,0): 0}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
+
+  ###### assignment: {(2,0): 0, (2,2): 0, (3,0): 1} ######
+  assignment = {(2,0): 0, (2,2): 0, (3,0): 1}  
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 0, (2,2): 0, (3,0): 1}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+  ###### assignment: {(2,0): 0, (2,2): 1, (3,0): 0} ######
+  assignment = {(2,0): 0, (2,2): 1, (3,0): 0}  
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 0, (2,2): 1, (3,0): 0}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+  ###### assignment: {(2,0): 1, (2,2): 1, (3,0): 0} ######
+  assignment = {(2,0): 1, (2,2): 0, (3,0): 0}  
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 1, (2,2): 0, (3,0): 0}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+  ###### assignment: {(2,0): 1, (2,2): 1, (3,0): 0} ######
+  assignment = {(2,0): 1, (2,2): 1, (3,0): 0}  
+  var = (2,1)
+  value = 0
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+  assignment = {(2,0): 1, (2,2): 1, (3,0): 0}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == False
+
+
+def test_isAssignmentConsistent2():
+  hidden = [
+    [1,     2,   3],
+    [1,     1,   1],
+    ["H", "H", "H"],
+    ["H",   2, "F"]
+  ]
+  num_rows = 4
+  num_cols = 3
+
+  graph = {
+    (2,0): {(1,0), (1,1), (3,1)}, 
+    (2,1): {(1,0), (1,1), (1,2), (3,1)},
+    (2,2): {(1,1), (1,2), (3,1)},
+    (3,0): {(3,1)},
+    (1,0): {(2,0), (2,1)},
+    (1,1): {(2,0), (2,1), (2,2)},
+    (1,2): {(2,1), (2,2)},
+    (3,1): {(3,0), (2,0), (2,1), (2,2)}
+  }
+  segment = {(3, 1), (1, 2), (1, 0), (1, 1)}
+  P_dict = {
+    (1,0): 1,
+    (1,1): 1,
+    (1,2): 1,
+    (3,1): 1
+  }
+  assignment = {(2,0): 0, (2,2): 0}  
+  var = (2,1)
+  value = 1
+  assert isAssignmentConsistent(var, value, assignment, segment, graph, P_dict) == True
 
 def test_findBorder():
   hidden = [
