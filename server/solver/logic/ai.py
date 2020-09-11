@@ -133,25 +133,30 @@ def backtrack(hidden, segment, graph, P_dict):
   -------
   A dictionary that maps hidden cells (adjacent to the current segment) to probabilities
   """
-  variables = list(getAllAdjacentHiddenCellsOfSegment(segment, graph))   
-  return recursiveBacktrack(dict(), variables, segment, graph, P_dict, hidden, [])
 
-def recursiveBacktrack(assignment, variables, segment, graph, P_dict, hidden, solutions):
-  print(assignment)
-  if len(assignment) == len(variables):
-    solutions.append(assignment)
-    return assignment, solutions
-  
-  next_assigned_var = selectUnassignedVariable(variables, assignment)
-  for i in [0,1]:
-    if isAssignmentConsistent(next_assigned_var, i, assignment, segment, graph, P_dict):
-      assignment[next_assigned_var] = i
-      result, solutions = recursiveBacktrack(assignment, variables, segment, graph, P_dict, hidden, solutions)
-      if result != "fail":
-        return result, solutions
-      del assignment[next_assigned_var]
-      print(assignment)
-  return "fail", solutions
+  def recursiveBacktrack(assignment, variables, segment, graph, P_dict, hidden):
+    """Returns all consistent solutions given the current assignment.
+    """
+    #if assignment is complete, add assignment to solutions
+    assignment_copy = assignment.copy()
+    if len(assignment_copy) == len(variables):
+      solutions.append(assignment_copy)
+      return
+
+    next_assigned_var = selectUnassignedVariable(variables, assignment_copy)
+
+    #for the next unassigned variable, find all consistent solutions by recursing on all consistent values
+    for i in [0,1]:
+      if isAssignmentConsistent(next_assigned_var, i, assignment_copy, segment, graph, P_dict):
+        assignment_copy[next_assigned_var] = i
+        recursiveBacktrack(assignment_copy, variables, segment, graph, P_dict, hidden)
+        del assignment_copy[next_assigned_var]
+
+  variables = list(getAllAdjacentHiddenCellsOfSegment(segment, graph))   
+  solutions=[]
+  recursiveBacktrack(dict(), variables, segment, graph, P_dict, hidden)
+
+  return solutions
 
 def getAllAdjacentHiddenCellsOfSegment(segment, graph):
   variables = set()

@@ -1,0 +1,5 @@
+{
+  "logic/ai_test.py::test_backtrack": true,
+  "logic/ai_test.py::test_backtrack2": true,
+  "logic/ai_test.py::test_backtrack3": true
+}

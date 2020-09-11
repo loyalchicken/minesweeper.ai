@@ -1,7 +1,7 @@
 from solver.logic.ai import firstMove, findRandomZeroCell, uncover, findDefiniteMines, isHiddenComplete, flagDefiniteMines, clickAdjacentCellsToUncover
 from solver.logic.ai import generateBoard, generateMoves 
 from solver.logic.ai import findSegments, dfs, findBorder, findBorderHelper
-from solver.logic.ai import isAssignmentConsistent, getAllAdjacentHiddenCellsOfSegment, selectUnassignedVariable, recursiveBacktrack, backtrack
+from solver.logic.ai import isAssignmentConsistent, getAllAdjacentHiddenCellsOfSegment, selectUnassignedVariable, backtrack
 
 import numpy as np
 
@@ -66,11 +66,11 @@ def test_backtrack():
     (1,2): 1,
     (3,1): 1
   }
-  _, solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [{(2, 0): 0, (2, 1): 1, (2, 2): 0, (3, 0): 0}]
   assert solutions == expected_solutions
 
-def test_backtrack2():
+def test_backtrack20():
   hidden = [
     [1,     1,   1],
     ["H", "H", "H"],
@@ -99,18 +99,11 @@ def test_backtrack2():
     (3,0): 1,
     (3,2): 1
   }
-  segment2 = {(3,0), (3,2)}
-  _, solutions = backtrack(hidden, segment, graph, P_dict)
-  _, solutions2 = backtrack(hidden, segment2, graph, P_dict)
+  solutions = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [{(1,0): 0, (1,1): 1, (1,2): 0}]
-  expected_solutions2 = [
-    {(2, 0): 0, (2, 1): 1, (2, 2): 0, (3, 1): 0}, 
-    {(2, 0): 0, (2, 1): 0, (2, 2): 0, (3, 1): 1}
-  ]
   assert solutions == expected_solutions
-  #assert solutions2 == expected_solutions2
 
-def test_backtrack3():
+def test_backtrack21():
   hidden = [
     [1,     1,   1],
     ["H", "H", "H"],
@@ -139,10 +132,151 @@ def test_backtrack3():
     (3,2): 1
   }
   segment = {(3,0), (3,2)}
-  _, solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [
-    {(2, 0): 0, (2, 1): 1, (2, 2): 0, (3, 1): 0}, 
-    {(2, 0): 0, (2, 1): 0, (2, 2): 0, (3, 1): 1}
+    {(2, 0): 0, (3, 1): 0, (2, 1): 1, (2, 2): 0}, 
+    {(2, 0): 0, (3, 1): 1, (2, 1): 0, (2, 2): 0},
+    {(2, 0): 1, (3, 1): 0, (2, 1): 0, (2, 2): 1}
+  ]
+  assert solutions == expected_solutions
+
+def test_backtrack3():
+  hidden = [
+    [1,   "H",  "H",   1],
+    ["H", "H",  "H", "H"],
+    ["H", "H",  "H", "H"],
+    [1,   "H",  "H",   1]
+  ]
+  graph= {
+    (0,0): {(1,0), (1,1), (0,1)},
+    (0,3): {(0,2), (1,2), (1,3)},
+    (3,0): {(2,0), (2,1), (3,1)},
+    (3,3): {(3,2), (2,2), (2,3)},
+    (0,1): {(0,0)},
+    (1,1): {(0,0)},
+    (1,0): {(0,0)},
+    (0,2): {(0,3)},
+    (1,2): {(0,3)},
+    (1,3): {(0,3)},
+    (2,0): {(3,0)},
+    (2,1): {(3,0)},
+    (3,1): {(3,0)},
+    (3,2): {(3,3)},
+    (2,2): {(3,3)},
+    (2,3): {(3,3)}
+  }
+  P_dict = {
+    (0,0): 1,
+    (0,3): 1,
+    (3,0): 1,
+    (3,3): 1
+  }
+  segment = {(3, 0)}
+  solutions = backtrack(hidden, segment, graph, P_dict)
+  expected_solutions = [
+    {(2,0): 0, (2,1): 1, (3,1): 0},
+    {(2,0): 0, (2,1): 0, (3,1): 1},
+    {(2,0): 1, (2,1): 0, (3,1): 0},
+  ]
+  assert solutions == expected_solutions
+
+  segment2 = {(0,3)}
+  solutions2 = backtrack(hidden, segment2, graph, P_dict)
+  expected_solutions2 = [
+    {(0,2): 1, (1,2): 0, (1,3): 0},
+    {(0,2): 0, (1,2): 0, (1,3): 1},
+    {(0,2): 0, (1,2): 1, (1,3): 0},
+  ]
+  assert solutions2 == expected_solutions2
+
+  segment3 = {(0,0)}
+  solutions3 = backtrack(hidden, segment3, graph, P_dict)
+  expected_solutions3 = [
+    {(0,1): 0, (1,1): 1, (1,0): 0},
+    {(0,1): 0, (1,1): 0, (1,0): 1},
+    {(0,1): 1, (1,1): 0, (1,0): 0},
+  ]
+  assert solutions3 == expected_solutions3
+
+  segment4 = {(3,3)}
+  solutions4 = backtrack(hidden, segment4, graph, P_dict)
+  expected_solutions4 = [
+    {(2,2): 1, (2,3): 0, (3,2): 0},
+    {(2,2): 0, (2,3): 1, (3,2): 0},
+    {(2,2): 0, (2,3): 0, (3,2): 1},
+  ]
+  assert solutions4 == expected_solutions4
+
+def test_backtrack4():
+  hidden = [
+    [2,   "H",  "H",   2],
+    ["H", "H",  "H", "H"],
+    [1  ,  2,    1,    1],
+    [0,    0,    0,    1]
+  ]  
+  graph= {
+    (0,0): {(1,0), (1,1), (0,1)},
+    (0,3): {(0,2), (1,2), (1,3)},
+    (2,0): {(1,0), (1,1)},
+    (2,1): {(1,0), (1,1), (1,2)},
+    (2,2): {(1,1), (1,2), (1,3)},
+    (2,3): {(1,2), (1,3)},
+    (0,2): {(0,3)},
+    (1,2): {(0,3), (2,1), (2,2), (2,3)},
+    (1,3): {(0,3), (2,2), (2,3)},
+    (0,1): {(0,0)},
+    (1,0): {(0,0), (2,0), (2,1)},
+    (1,1): {(0,0), (2,0), (2,1), (2,2)}
+  }
+  P_dict = {
+    (0,0): 2,
+    (0,3): 2,
+    (2,0): 1,
+    (2,1): 2,
+    (2,2): 1,
+    (2,3): 1
+  }
+  segment = {(0,0), (0,3), (2,0), (2,1), (2,2), (2,3)}
+  solutions = backtrack(hidden, segment, graph, P_dict)
+  expected_solutions = [
+    {(0, 1): 1, (0, 2): 1, (1,0): 1, (1,1): 0, (1,2): 1, (1,3): 0}
+  ]
+  assert solutions == expected_solutions
+
+def test_backtrack5():
+  hidden = [
+    [0  ,   0,   1, "H"],
+    [0  ,   0,   1, "H"],
+    [1  ,   1,   2, "H"],
+    ["H", "H", "H", "H"]
+  ]  
+  graph= {
+    (0,2): {(0,3), (1,3)},
+    (1,2): {(0,3), (1,3), (2,3)},
+    (2,2): {(1,3), (2,3), (3,3), (3,2), (3,1)},
+    (2,1): {(3,0), (3,1), (3,2)},
+    (2,0): {(3,0), (3,1)},
+    (0,3): {(0,2), (1,2)},
+    (1,3): {(0,2), (1,2), (2,2)},
+    (2,3): {(1,2), (2,2)},
+    (3,3): {(2,2)},
+    (3,2): {(2,2), (2,1)},
+    (3,1): {(2,2), (2,1), (2,0)}, 
+    (3,0): {(2,1), (2,0)}
+  }
+  segment = {(2,0), (2,1), (2,2), (1,2), (0,2)}
+  P_dict = {
+    (2,0): 1,
+    (2,1): 1,
+    (2,2): 2,
+    (1,2): 1,
+    (0,2): 1,
+  }
+  solutions = backtrack(hidden, segment, graph, P_dict)
+  expected_solutions = [
+    {(0,3): 1, (1,3): 0, (2,3): 0, (3,3): 1, (3,2): 0, (3,1): 1, (3,0): 0},
+    {(0,3): 0, (1,3): 1, (2,3): 0, (3,3): 0, (3,2): 0, (3,1): 1, (3,0): 0},
+    {(0,3): 0, (1,3): 1, (2,3): 0, (3,3): 1, (3,2): 0, (3,1): 0, (3,0): 1},
   ]
   assert solutions == expected_solutions
 
@@ -185,11 +319,11 @@ def test_selectUnassignedVariable():
   assert selectUnassignedVariable(variables, assignment) == (0,0)
 
   variables = [(0,0), (1,1), (2,2)]
-  assignment = {(0,0), (1,1)}
+  assignment = {(0,0): 1, (1,1): 0}
   assert selectUnassignedVariable(variables, assignment) == (2,2)
 
   variables = [(0,0), (1,1), (2,2)]
-  assignment = {(0,0)}
+  assignment = {(0,0): 1}
   assert selectUnassignedVariable(variables, assignment) == (1,1)
 
 def test_isAssignmentConsistent():
@@ -575,6 +709,83 @@ def test_findSegment3():
     (0,3): 1,
     (3,0): 1,
     (3,3): 1
+  }
+
+  graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
+  assert segments == expected_segments
+  assert graph == expected_graph
+  assert P_dict == expected_P_dict
+
+def test_findSegment4():
+  hidden = [
+    [2,   "H",  "H",   2],
+    ["H", "H",  "H", "H"],
+    [1  ,  2,    1,    1],
+    [0,    0,    0,    1]
+  ]  
+  num_rows = 4
+  num_cols = 4
+
+  expected_graph= {
+    (0,0): {(1,0), (1,1), (0,1)},
+    (0,3): {(0,2), (1,2), (1,3)},
+    (2,0): {(1,0), (1,1)},
+    (2,1): {(1,0), (1,1), (1,2)},
+    (2,2): {(1,1), (1,2), (1,3)},
+    (2,3): {(1,2), (1,3)},
+    (0,2): {(0,3)},
+    (1,2): {(0,3), (2,1), (2,2), (2,3)},
+    (1,3): {(0,3), (2,2), (2,3)},
+    (0,1): {(0,0)},
+    (1,0): {(0,0), (2,0), (2,1)},
+    (1,1): {(0,0), (2,0), (2,1), (2,2)}
+  }
+  expected_segments = [{(0,0), (0,3), (2,0), (2,1), (2,2), (2,3)}]
+  expected_P_dict = {
+    (0,0): 2,
+    (0,3): 2,
+    (2,0): 1,
+    (2,1): 2,
+    (2,2): 1,
+    (2,3): 1
+  }
+
+  graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
+  assert segments == expected_segments
+  assert graph == expected_graph
+  assert P_dict == expected_P_dict
+
+def test_findSegment5():
+  hidden = [
+    [0  ,   0,   1, "H"],
+    [0  ,   0,   1, "H"],
+    [1  ,   1,   2, "H"],
+    ["H", "H", "H", "H"]
+  ]  
+  num_rows = 4
+  num_cols = 4
+
+  expected_graph= {
+    (0,2): {(0,3), (1,3)},
+    (1,2): {(0,3), (1,3), (2,3)},
+    (2,2): {(1,3), (2,3), (3,3), (3,2), (3,1)},
+    (2,1): {(3,0), (3,1), (3,2)},
+    (2,0): {(3,0), (3,1)},
+    (0,3): {(0,2), (1,2)},
+    (1,3): {(0,2), (1,2), (2,2)},
+    (2,3): {(1,2), (2,2)},
+    (3,3): {(2,2)},
+    (3,2): {(2,2), (2,1)},
+    (3,1): {(2,2), (2,1), (2,0)}, 
+    (3,0): {(2,1), (2,0)}
+  }
+  expected_segments = [{(2,0), (2,1), (2,2), (1,2), (0,2)}]
+  expected_P_dict = {
+    (2,0): 1,
+    (2,1): 1,
+    (2,2): 2,
+    (1,2): 1,
+    (0,2): 1,
   }
 
   graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
