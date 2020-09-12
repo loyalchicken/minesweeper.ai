@@ -67,23 +67,23 @@ export const displayMoves = moves => dispatch => {
   moves.forEach(item => {
     if (typeof item[0] === "number") {
       //left click
-      //setTimeout(() => {
+      setTimeout(() => {
         dispatch({
           type: SHOW_SQUARE,
           row: item[0],
           cols: item[1]
         })
-      //}, 0)
+      }, 0)
     } else {
       //right click
       item.forEach(cell => {
-        //setTimeout(() => {
+        setTimeout(() => {
           dispatch({
             type: FLAG_SQUARE,
             row: cell[0],
             cols: cell[1]
           })
-        //}, 0)  
+        }, 0)  
       });
     }
     dispatch({

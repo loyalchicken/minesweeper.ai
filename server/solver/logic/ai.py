@@ -13,13 +13,13 @@ def generateBoard(num_rows, num_cols, num_mines):
 def generateMoves(board, hidden, num_rows, num_cols, num_mines):
   moves = []
   cells_flagged = set()
-  cell = findNextMove(board, hidden, num_rows, num_cols, num_mines) #need board to ensure first move hits a 0
-  
-  while cell != None:
-    moves += cell
-    hidden = uncover(cell, hidden, board, num_rows, num_cols) #need board to unhide 0 patch if cell number is 0
-    cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
 
+  #find the cell to first uncover
+  cells_to_uncover, _, _ = findNextMove(board, hidden, num_rows, num_cols, num_mines) 
+  while cells_to_uncover != None:
+    moves += cells_to_uncover
+    hidden = uncover(cells_to_uncover, hidden, board, num_rows, num_cols) #need board to unhide 0 patch if cell number is 0
+    cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
     cells_to_flag = (cells_to_flag | cells_flagged) - cells_flagged
     cells_flagged = cells_flagged | cells_to_flag
 
@@ -43,8 +43,14 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
       cells_to_flag = (cells_to_flag | cells_flagged) - cells_flagged
       cells_flagged = cells_flagged | cells_to_flag
     
-    cell = findNextMove(board, hidden, num_rows, num_cols, num_mines)
-  
+    #find the next cells to uncover by backtracking 
+    cells_to_uncover, cells_to_flag, probabilities = findNextMove(board, hidden, num_rows, num_cols, num_mines)
+    
+    #if there are no more cells to uncover flag the definite mines 
+    if cells_to_uncover == None:
+      hidden = flagDefiniteMines(hidden, cells_to_flag)
+      moves.append(list(map(list, list(cells_to_flag))))
+
   graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
   return moves, segments
 
@@ -63,33 +69,38 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines):
 
   Returns
   -------
-  A list of tuples (cells)
+  A list of tuples (cells to uncover), set of tuples (cells to flag), dictionary (maps cells to a number)
   """
   #choose a random cell on the board on first move
   if firstMove(hidden, num_rows, num_cols):
-    return findRandomZeroCell(board, num_rows, num_cols)
+    return findRandomZeroCell(board, num_rows, num_cols), None, None
 
   nextMoves = []
   graph, segments, P_dict = findSegments(hidden, num_rows, num_cols)
+  nextFlags = set()
 
   #for each segment backtrack and find hidden cells w/ highest probability
   highest_prob_so_far = 0
   cell_with_highest_prob = None
+  probability_map = None
   for segment in segments:
     solutions = backtrack(hidden, segment, graph, P_dict)
     probability_map = getProbabilityDistr(solutions)
     for cell in probability_map:
       if probability_map[cell] == 1.0:
-        nextMoves.append(cell)
+        nextMoves.append(list(cell))
+      elif probability_map[cell] == 0.0:
+        nextFlags.add(cell)
       else:
         if probability_map[cell] > highest_prob_so_far:
           cell_with_highest_prob = cell
           highest_prob_so_far = probability_map[cell]
 
   if len(nextMoves) > 0:
-    return nextMoves
-  return None
-  #if no definite moves, we choose cell with highest probability not a mine
+    return nextMoves, nextFlags, None
+    
+  return None, nextFlags, probability_map
+  #if no definite moves, choose cell with highest probability not a mine
   #if len(nextMoves) == 0:
 
   #if max(probabilities) < randomProbability(), then return random hidden cell
@@ -379,6 +390,8 @@ def uncover(cell, hidden, board, num_rows, num_cols):
   Updated 2D character array
   """
   for n in cell:
+    if len(n) == 1: #these are flags, ie. [[1,1]]
+      continue
     row_index = n[0]
     cols_index = n[1]
     hidden[row_index][cols_index]=board[row_index][cols_index]
@@ -409,6 +422,7 @@ def findDefiniteMines(hidden, num_rows, num_cols):
         complete, hiddenCells = isHiddenComplete(hidden[i][j], hidden, i, j, num_rows, num_cols)
         if complete: 
           cells = cells | hiddenCells
+  
   return cells
 
 def isHiddenComplete(num_adjacent_mines, hidden, row_index, cols_index, num_rows, num_cols):
