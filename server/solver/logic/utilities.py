@@ -31,3 +31,15 @@ def round_dict(d, n):
   for key in d:
     new_dict[key]=round(d[key], n)
   return new_dict
+
+def merge_two_dicts(x, y):
+  z = x.copy()   # start with x's keys and values
+  z.update(y)    # modifies z with y's keys and values & returns None
+  return z
+
+def win(hidden, num_rows, num_cols, num_mines):
+  hidden = np.array(hidden)
+  num_flagged = (hidden=="F").sum()
+  num_hidden = (hidden=="H").sum()
+  total_cells = num_rows*num_cols
+  return num_flagged+num_hidden == num_mines

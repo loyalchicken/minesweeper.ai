@@ -11,6 +11,5 @@ def generateBoardAndSolve(request):
   board, hidden = generateBoard(num_rows, num_cols, num_mines)
   moves, segments = generateMoves(board, hidden, num_rows, num_cols, num_mines)
   segments = [[list(tup) for tup in segment] for segment in segments]
-  print(segments)
 
   return JsonResponse({'moves': moves, 'board': board.tolist(), 'segments': segments})

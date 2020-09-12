@@ -1,7 +1,8 @@
 import numpy as np
 from solver.logic.unhide_helpers import unhideSurroundingSquaresWithZero, unhideSurroundingSquaresWithZeroHelper, isFlaggedComplete, unhideAllSurroundingSquares
 from solver.logic.board_helpers import convertFrom1Dto2D, generateMines, generateNumbersArr
-from solver.logic.utilities import adjacent_cells_of, connected_cells_of
+from solver.logic.utilities import adjacent_cells_of, connected_cells_of, merge_two_dicts, win
+from solver.logic.probability_helpers import numHiddenCellsNotOnBorder
 ############################################# SOLVER #########################################################
 
 def generateBoard(num_rows, num_cols, num_mines):
@@ -15,10 +16,21 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
   cells_flagged = set()
 
   #find the cell to first uncover
-  cells_to_uncover, _, _ = findNextMove(board, hidden, num_rows, num_cols, num_mines) 
-  while cells_to_uncover != None:
+  cells_to_uncover, _, _ = findNextMove(board, hidden, num_rows, num_cols, num_mines, cells_flagged) 
+  while True:
+    if cells_to_uncover == [None]:
+      break
     moves += cells_to_uncover
-    hidden = uncover(cells_to_uncover, hidden, board, num_rows, num_cols) #need board to unhide 0 patch if cell number is 0
+    hidden, uncovered_mine = uncover(cells_to_uncover, hidden, board, num_rows, num_cols) #need board to unhide 0 patch if cell number is 0
+    
+    ###LOSE CONDITION###
+    if uncovered_mine == True:
+      break
+    
+    ###WIN CONDITION###
+    if win(hidden, num_rows, num_cols, num_mines) == True:
+      break
+
     cells_to_flag = findDefiniteMines(hidden, num_rows, num_cols)
     cells_to_flag = (cells_to_flag | cells_flagged) - cells_flagged
     cells_flagged = cells_flagged | cells_to_flag
@@ -44,10 +56,10 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
       cells_flagged = cells_flagged | cells_to_flag
     
     #find the next cells to uncover by backtracking 
-    cells_to_uncover, cells_to_flag, probabilities = findNextMove(board, hidden, num_rows, num_cols, num_mines)
-    
+    cells_to_uncover, cells_to_flag, probabilities = findNextMove(board, hidden, num_rows, num_cols, num_mines, cells_flagged)
+
     #if there are no more cells to uncover flag the definite mines 
-    if cells_to_uncover == None:
+    if cells_to_flag != None:
       hidden = flagDefiniteMines(hidden, cells_to_flag)
       moves.append(list(map(list, list(cells_to_flag))))
 
@@ -56,7 +68,7 @@ def generateMoves(board, hidden, num_rows, num_cols, num_mines):
 
 ######################################## GENERATE MOVES HELPERS ########################################################
 
-def findNextMove(board, hidden, num_rows, num_cols, num_mines):
+def findNextMove(board, hidden, num_rows, num_cols, num_mines, cells_flagged):
   """Returns the cell (tuple) to next uncover.
 
   Parameters
@@ -82,25 +94,35 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines):
   #for each segment backtrack and find hidden cells w/ highest probability
   highest_prob_so_far = 0
   cell_with_highest_prob = None
-  probability_map = None
+  probability_map = dict()
   for segment in segments:
     solutions = backtrack(hidden, segment, graph, P_dict)
-    probability_map = getProbabilityDistr(solutions)
-    for cell in probability_map:
-      if probability_map[cell] == 1.0:
-        nextMoves.append(list(cell))
-      elif probability_map[cell] == 0.0:
-        nextFlags.add(cell)
-      else:
-        if probability_map[cell] > highest_prob_so_far:
-          cell_with_highest_prob = cell
-          highest_prob_so_far = probability_map[cell]
+    probability_map = merge_two_dicts(probability_map, getProbabilityDistr(solutions))
+  for cell in probability_map:
+    if probability_map[cell] > highest_prob_so_far:
+      cell_with_highest_prob = cell
+      highest_prob_so_far = probability_map[cell]
+
+    if probability_map[cell] == 1.0:
+      nextMoves.append(list(cell))
+    if probability_map[cell] == 0.0:
+      nextFlags.add(cell)
 
   if len(nextMoves) > 0:
-    return nextMoves, nextFlags, None
+    return nextMoves, None, None
     
-  return None, nextFlags, probability_map
-  #if no definite moves, choose cell with highest probability not a mine
+  #choose cell with highest probability not a mine
+  hidden = flagDefiniteMines(hidden, nextFlags) #need this calculate correct probability by updating hidden prematurely here
+  #num_hidden_cells_not_on_border = numHiddenCellsNotOnBorder()
+  #num_hidden_cells_that_are_mines = num_mines - len(cells_flagged)
+  
+  #random_cell_probability_not_mine = 1 - (num_hidden_cells_that_are_mines / num_hidden_cells_not_on_border)
+  #if random_cell_probability_not_mine > max(probability_map.values()):
+  #  return find_random_hidden_cell(), nextFlags, probability_map
+  
+  #return max(probability_map, key=probability_map.get)
+  print(probability_map)
+  return [cell_with_highest_prob], nextFlags, probability_map
   #if len(nextMoves) == 0:
 
   #if max(probabilities) < randomProbability(), then return random hidden cell
@@ -389,17 +411,22 @@ def uncover(cell, hidden, board, num_rows, num_cols):
   -------
   Updated 2D character array
   """
+  uncovered_mine = False
   for n in cell:
     if len(n) == 1: #these are flags, ie. [[1,1]]
       continue
     row_index = n[0]
     cols_index = n[1]
     hidden[row_index][cols_index]=board[row_index][cols_index]
+    if board[row_index][cols_index] == 9:
+      uncovered_mine = True
     if board[row_index][cols_index] == 0:
       cells_to_unhide = unhideSurroundingSquaresWithZero(board, row_index, cols_index, num_rows, num_cols)
       for c in cells_to_unhide:
         hidden[c[0]][c[1]]=board[c[0]][c[1]]
-  return hidden
+        if board[c[0]][c[1]] == 9:
+          uncovered_mine = True
+  return hidden, uncovered_mine
 
 def findDefiniteMines(hidden, num_rows, num_cols):
   """Returns the cells which are definitely mines (to be flagged) by iterating through all shown cells
