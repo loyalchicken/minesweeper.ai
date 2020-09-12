@@ -1,7 +1,8 @@
 from solver.logic.ai import firstMove, findRandomZeroCell, uncover, findDefiniteMines, isHiddenComplete, flagDefiniteMines, clickAdjacentCellsToUncover
 from solver.logic.ai import generateBoard, generateMoves 
 from solver.logic.ai import findSegments, dfs, findBorder, findBorderHelper
-from solver.logic.ai import isAssignmentConsistent, getAllAdjacentHiddenCellsOfSegment, selectUnassignedVariable, backtrack
+from solver.logic.ai import isAssignmentConsistent, getAllAdjacentHiddenCellsOfSegment, selectUnassignedVariable, backtrack, getProbabilityDistr
+from solver.logic.utilities import round_dict
 
 import numpy as np
 
@@ -39,8 +40,8 @@ def test_findRandomZeroCell():
   ]
   num_rows=2
   num_cols=3
-  assert findRandomZeroCell(board, num_rows, num_cols) == [1,2]
-  assert findRandomZeroCell(board2, num_rows, num_cols) == [0,0]
+  assert findRandomZeroCell(board, num_rows, num_cols) == [[1,2]]
+  assert findRandomZeroCell(board2, num_rows, num_cols) == [[0,0]]
 
 def test_backtrack():
   hidden = [
@@ -812,6 +813,24 @@ def test_dfs():
   assert seen == expected_seen
   assert segment == expected_segment
 
+def test_getProbabilityDistr1():
+  solutions = [
+    {(0,3): 1, (1,3): 0, (2,3): 0, (3,3): 1, (3,2): 0, (3,1): 1, (3,0): 0},
+    {(0,3): 0, (1,3): 1, (2,3): 0, (3,3): 0, (3,2): 0, (3,1): 1, (3,0): 0},
+    {(0,3): 0, (1,3): 1, (2,3): 0, (3,3): 1, (3,2): 0, (3,1): 0, (3,0): 1}
+  ]
+  probs = round_dict(getProbabilityDistr(solutions),7)
+  expected_probs = round_dict({(0,3): 2/3, (1,3): 1/3, (2,3): 1.0, (3,3): 1/3, (3,2): 1.0, (3,1): 1/3, (3,0): 2/3},7)
+  assert probs == expected_probs
+
+def test_getProbabilityDistr2():
+  solutions = [
+    {(0, 1): 1, (0, 2): 1, (1,0): 1, (1,1): 0, (1,2): 1, (1,3): 0}
+  ]
+  probs = round_dict(getProbabilityDistr(solutions),7)
+  expected_probs = round_dict({(0, 1): 0.0, (0, 2): 0.0, (1,0): 0.0, (1,1): 1.0, (1,2): 0.0, (1,3): 1.0},7)
+  assert probs == expected_probs
+
 def test_uncover():
   board = [
     [0, 0, 0],
@@ -825,7 +844,7 @@ def test_uncover():
     ["H", "H", "H"],
     ["H", "H", "H"]
   ]
-  cell=(0,0)
+  cell=[[0,0]]
   num_rows=4
   num_cols=3
   updatedHidden = [

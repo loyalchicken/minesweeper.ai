@@ -23,3 +23,11 @@ def connected_cells_of(cell, num_rows, num_cols):
   if row_index<num_rows-1:
     cells.append((row_index+1, cols_index))
   return cells
+
+def round_dict(d, n):
+  """Round all values in dictionary d to n decimal places
+  """
+  new_dict = dict()
+  for key in d:
+    new_dict[key]=round(d[key], n)
+  return new_dict
