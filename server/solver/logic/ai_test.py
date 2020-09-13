@@ -67,7 +67,7 @@ def test_backtrack():
     (1,2): 1,
     (3,1): 1
   }
-  solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions, variables = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [{(2, 0): 0, (2, 1): 1, (2, 2): 0, (3, 0): 0}]
   assert solutions == expected_solutions
 
@@ -100,7 +100,7 @@ def test_backtrack20():
     (3,0): 1,
     (3,2): 1
   }
-  solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions, variables = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [{(1,0): 0, (1,1): 1, (1,2): 0}]
   assert solutions == expected_solutions
 
@@ -133,7 +133,7 @@ def test_backtrack21():
     (3,2): 1
   }
   segment = {(3,0), (3,2)}
-  solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions, variables = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [
     {(2, 0): 0, (3, 1): 0, (2, 1): 1, (2, 2): 0}, 
     {(2, 0): 0, (3, 1): 1, (2, 1): 0, (2, 2): 0},
@@ -173,7 +173,7 @@ def test_backtrack3():
     (3,3): 1
   }
   segment = {(3, 0)}
-  solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions, variables = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [
     {(2,0): 0, (2,1): 1, (3,1): 0},
     {(2,0): 0, (2,1): 0, (3,1): 1},
@@ -182,7 +182,7 @@ def test_backtrack3():
   assert solutions == expected_solutions
 
   segment2 = {(0,3)}
-  solutions2 = backtrack(hidden, segment2, graph, P_dict)
+  solutions2, variables2 = backtrack(hidden, segment2, graph, P_dict)
   expected_solutions2 = [
     {(0,2): 1, (1,2): 0, (1,3): 0},
     {(0,2): 0, (1,2): 0, (1,3): 1},
@@ -191,7 +191,7 @@ def test_backtrack3():
   assert solutions2 == expected_solutions2
 
   segment3 = {(0,0)}
-  solutions3 = backtrack(hidden, segment3, graph, P_dict)
+  solutions3, variables3 = backtrack(hidden, segment3, graph, P_dict)
   expected_solutions3 = [
     {(0,1): 0, (1,1): 1, (1,0): 0},
     {(0,1): 0, (1,1): 0, (1,0): 1},
@@ -200,7 +200,7 @@ def test_backtrack3():
   assert solutions3 == expected_solutions3
 
   segment4 = {(3,3)}
-  solutions4 = backtrack(hidden, segment4, graph, P_dict)
+  solutions4, variables4 = backtrack(hidden, segment4, graph, P_dict)
   expected_solutions4 = [
     {(2,2): 1, (2,3): 0, (3,2): 0},
     {(2,2): 0, (2,3): 1, (3,2): 0},
@@ -238,7 +238,7 @@ def test_backtrack4():
     (2,3): 1
   }
   segment = {(0,0), (0,3), (2,0), (2,1), (2,2), (2,3)}
-  solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions, variables = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [
     {(0, 1): 1, (0, 2): 1, (1,0): 1, (1,1): 0, (1,2): 1, (1,3): 0}
   ]
@@ -273,7 +273,7 @@ def test_backtrack5():
     (1,2): 1,
     (0,2): 1,
   }
-  solutions = backtrack(hidden, segment, graph, P_dict)
+  solutions, variables = backtrack(hidden, segment, graph, P_dict)
   expected_solutions = [
     {(0,3): 1, (1,3): 0, (2,3): 0, (3,3): 1, (3,2): 0, (3,1): 1, (3,0): 0},
     {(0,3): 0, (1,3): 1, (2,3): 0, (3,3): 0, (3,2): 0, (3,1): 1, (3,0): 0},

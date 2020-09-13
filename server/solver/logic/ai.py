@@ -2,7 +2,7 @@ import numpy as np
 from solver.logic.unhide_helpers import unhideSurroundingSquaresWithZero, unhideSurroundingSquaresWithZeroHelper, isFlaggedComplete, unhideAllSurroundingSquares
 from solver.logic.board_helpers import convertFrom1Dto2D, generateMines, generateNumbersArr
 from solver.logic.utilities import adjacent_cells_of, connected_cells_of, merge_two_dicts, win
-from solver.logic.probability_helpers import numHiddenCellsNotOnBorder
+from solver.logic.probability_helpers import probabilityRandomCellIsNotMine, findRandomHiddenCell
 ############################################# SOLVER #########################################################
 
 def generateBoard(num_rows, num_cols, num_mines):
@@ -95,8 +95,10 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines, cells_flagged):
   highest_prob_so_far = 0
   cell_with_highest_prob = None
   probability_map = dict()
+  hidden_cells_adjacent_to_segments = set()
   for segment in segments:
-    solutions = backtrack(hidden, segment, graph, P_dict)
+    solutions, hidden_cells_adjacent_to_segment = backtrack(hidden, segment, graph, P_dict)
+    hidden_cells_adjacent_to_segments = hidden_cells_adjacent_to_segments | set(hidden_cells_adjacent_to_segment)
     probability_map = merge_two_dicts(probability_map, getProbabilityDistr(solutions))
   for cell in probability_map:
     if probability_map[cell] > highest_prob_so_far:
@@ -113,18 +115,19 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines, cells_flagged):
     
   #choose cell with highest probability not a mine
   hidden = flagDefiniteMines(hidden, nextFlags) #need this calculate correct probability by updating hidden prematurely here
-  #num_hidden_cells_not_on_border = numHiddenCellsNotOnBorder()
-  #num_hidden_cells_that_are_mines = num_mines - len(cells_flagged)
+  random_cell_probability_not_mine = probabilityRandomCellIsNotMine(hidden, hidden_cells_adjacent_to_segments, num_mines, probability_map)
   
-  #random_cell_probability_not_mine = 1 - (num_hidden_cells_that_are_mines / num_hidden_cells_not_on_border)
-  #if random_cell_probability_not_mine > max(probability_map.values()):
-  #  return find_random_hidden_cell(), nextFlags, probability_map
-  
-  #return max(probability_map, key=probability_map.get)
-  print(probability_map)
-  return [cell_with_highest_prob], nextFlags, probability_map
-  #if len(nextMoves) == 0:
+  #print(probability_map)
 
+  if random_cell_probability_not_mine > highest_prob_so_far:
+    random_cell = findRandomHiddenCell(hidden, hidden_cells_adjacent_to_segments)
+    print(random_cell)
+    return [random_cell], nextFlags, probability_map
+  
+  return [cell_with_highest_prob], nextFlags, probability_map
+  
+  
+  #if len(nextMoves) == 0:
   #if max(probabilities) < randomProbability(), then return random hidden cell
   #else return cell with max(probability) 
 
@@ -209,7 +212,7 @@ def backtrack(hidden, segment, graph, P_dict):
   solutions=[]
   recursiveBacktrack(dict(), variables, segment, graph, P_dict, hidden)
 
-  return solutions
+  return solutions, variables
 
 def getAllAdjacentHiddenCellsOfSegment(segment, graph):
   variables = set()
