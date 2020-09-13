@@ -114,14 +114,14 @@ def findNextMove(board, hidden, num_rows, num_cols, num_mines, cells_flagged):
     return nextMoves, None, None
     
   #choose cell with highest probability not a mine
-  hidden = flagDefiniteMines(hidden, nextFlags) #need this calculate correct probability by updating hidden prematurely here
+  hidden = flagDefiniteMines(hidden, nextFlags) #need this to calculate correct probability by updating hidden prematurely here
   random_cell_probability_not_mine = probabilityRandomCellIsNotMine(hidden, hidden_cells_adjacent_to_segments, num_mines, probability_map)
   
-  #print(probability_map)
+  print(highest_prob_so_far)
+  print(random_cell_probability_not_mine)
 
   if random_cell_probability_not_mine > highest_prob_so_far:
     random_cell = findRandomHiddenCell(hidden, hidden_cells_adjacent_to_segments)
-    print(random_cell)
     return [random_cell], nextFlags, probability_map
   
   return [cell_with_highest_prob], nextFlags, probability_map
@@ -210,6 +210,11 @@ def backtrack(hidden, segment, graph, P_dict):
 
   variables = list(getAllAdjacentHiddenCellsOfSegment(segment, graph))   
   solutions=[]
+  print("-----------------BACKTRACK----------------")
+  print("variable length (adjacent hidden cells)")
+  print(len(variables))
+  print("constraint length (segment cells)")
+  print(len(segment))
   recursiveBacktrack(dict(), variables, segment, graph, P_dict, hidden)
 
   return solutions, variables

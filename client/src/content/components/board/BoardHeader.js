@@ -29,6 +29,11 @@ export class BoardHeader extends React.Component {
   render() {
     return (
       <div>
+        {
+          this.props.numFlagsRemaining
+        }
+        <br />
+        <br />
         <button 
           onClick={this.handleNewGame}
         >
@@ -52,14 +57,6 @@ export class BoardHeader extends React.Component {
           </button>
         )}
 
-        {this.props.segments && (
-          <button
-            onClick={this.handleSegment}
-          >
-            Show segments
-          </button>
-          )
-        }
       </div>
     );
   }
@@ -71,7 +68,8 @@ const mapStateToProps = state => ({
   numRows: state.numRows,
   numColumns: state.numColumns,
   numMines: state.numMines,
-  segments: state.segments
+  segments: state.segments,
+  numFlagsRemaining: state.numFlagsRemaining
 });
 
 const matchDispatchToProps = dispatch =>

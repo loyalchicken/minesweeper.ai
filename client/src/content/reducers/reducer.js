@@ -21,7 +21,8 @@ const initialState = {
   numMines: 99,
   gameMode: "normal",
   moves: null,
-  segments: null
+  segments: null,
+  numFlagsRemaining: 99
 };
 
 export default function reducer(state = initialState, action) {
@@ -123,9 +124,11 @@ export default function reducer(state = initialState, action) {
       if (state.gameMode==="flagging" && currVisibleState2 === "flag") {
         newVisible[action.row][action.cols]="hidden";
       }
+      const currFlagsRemaining = state.numFlagsRemaining;
       return {
         ...state,
-        visible: newVisible
+        visible: newVisible,
+        numFlagsRemaining: currFlagsRemaining-1
       }
     case CHANGE_MODE:
       return {
@@ -144,7 +147,8 @@ export default function reducer(state = initialState, action) {
         visible: new Array(state.numRows).fill("hidden").map(() => Array(state.numColumns).fill("hidden")),
         gameMode: "ai",
         activeGame: true,
-        firstClick: true
+        firstClick: true,
+        numFlagsRemaining: state.numMines
       }
     case GENERATING_BOARD:
       return {
